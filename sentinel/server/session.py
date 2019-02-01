@@ -173,7 +173,7 @@ class AddSessionPaymentSign(object):
                 if signature['final']:
                     end_session(session_id)
                 message = {
-                    'success': True
+                    'success': True,
                     'message': 'Successfully added payment sign'
                 }
             else:
