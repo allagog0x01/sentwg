@@ -1,8 +1,6 @@
 # coding=utf-8
 import json
-
 import falcon
-
 from ..db import db
 from ..helpers import end_session
 
@@ -71,7 +69,7 @@ class DisconnectClient(object):
                 'message': 'Wrong details.'
             }
         else:
-            end_session(session_id)
+            end_session(client['pub_key'])
             message = {
                 'success': True,
                 'message': 'Disconnected successfully.'

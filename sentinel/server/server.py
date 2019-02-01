@@ -10,7 +10,10 @@ from .client import GetSessionUsage
 from .session import AddSessionDetails
 from .session import AddSessionPaymentSign
 from .session import GetVpnCredentials
-from ..utils import JSONTranslator
+from ..utils import JSONTranslator, ValidateRequest
+
+
+
 
 
 class Up(object):
@@ -26,7 +29,7 @@ class Up(object):
 class APIServer(gunicorn.app.base.BaseApplication):
     def __init__(self, options=None):
         self.options = options or {}
-        self.server = falcon.API(middleware=[JSONTranslator()])
+        self.server = falcon.API(middleware=[ValidateRequest(),JSONTranslator()])
         self.server.add_route('/', Up())
         self.server.add_route('/clients/{account_addr}/sessions/{session_id}', AddSessionDetails())
         self.server.add_route('/clients/{account_addr}/sessions/{session_id}/usage', GetSessionUsage())

@@ -17,26 +17,43 @@ class AddSessionDetails(object):
         # TODO ADD TO CHECK TOKEN and also validate the incoming token for it's size type and any other
         token = str(req.body['token'])
 
-        # TODO : HOW DO I KNOW,IF I HAVE DB CONNECTION ESTABLISHED.
-
-        #TODO : MODELS?
-        # TODO: INDIVIDUALLY verify account address and sessions
-        _ = db.clients.find_one_and_update({
+        client = db.clients.find_one({
             'account_addr': account_addr,
             'session_id': session_id
-        }, {
-            '$set': {
-                'token': token,
-                'status': 'ADDED_SESSION_DETAILS'
-            }
-        }, upsert=True)
-        # TODO error handling for database requests.
-        # TODO : EVERY TIME SUCCESS. very bad
+        })
 
-        message = {
-            'success': True,
-            'message': 'Session details added successfully.'
-        }
+        if client is not None:
+            if client['status'] and client['status'] is not None:
+                message = {
+                'success': True,
+                'message': 'Session details already added.'
+            }
+            else:
+                update = db.clients.find_one_and_update({
+                        'account_addr': account_addr,
+                        'session_id': session_id
+                    }, {'$set':{
+                         'token': token,
+                         'status': 'ADDED_SESSION_DETAILS'
+                     }
+                })
+
+                if update is not None:                    
+                    message = {
+                        'success': True,
+                        'message': 'Session details added successfully.'
+                    }
+                else:
+                    message = {
+                        'success': False,
+                        'message': 'Session details not added.'
+                    }
+
+        else:
+            message = {
+                'success': False,
+                'message': 'Wrong details.'
+            }
 
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)
@@ -66,54 +83,48 @@ class GetVpnCredentials(object):
         client = db.clients.find_one({
             'account_addr': account_addr,
             'session_id': session_id,
-            'token': token,
-            'status': {
-                '$in': [
-                    'ADDED_SESSION_DETAILS',
-                    'SHARED_VPN_CREDS'
-                ]
-            }
-        })
+            'token': token
+         })
         if client is not None:
-
-
-            # TODO ARE TWO DATABASE REQUESTS REQUIRED?
-
-            client_vpn_config, error = wireguard.add_peer(pub_key)
-
-            # TODO CHECK IF PEER IS ADDED PROPERLY.IF PEER ADITION WAS DONE PROPERLY AT THE SAME CHECK IF THE PEER IS ALLOCATED IS SAME_IP
-
-            _ = db.clients.find_one_and_update({
-                'account_addr': account_addr,
-                'session_id': session_id,
-                'token': token,
-                'status': {
-                    '$in': [
-                        'ADDED_SESSION_DETAILS',
-                        'SHARED_VPN_CREDS'
-                    ]
+            if client['status'] and client['status'] == 'CONNECTED':
+                message = {
+                    'success': True,
+                    'message': 'Already connected / Already shared VPN credentials..'
                 }
-            }, {
-                '$set': {
-                    'usage': {
-                        'upload': 0,
-                        'download': 0
-                    },
-                    'pub_key': pub_key,
-                    'status': 'SHARED_VPN_CREDS'
-                }
-            })
+            elif client['status'] and client['status'] == 'ADDED_SESSION_DETAILS':
+                client_vpn_config, error = wireguard.add_peer(pub_key)
 
-            # TODO RETURNING METHODOLY SHOULD BE UNIFORM FOR EVERY API
-            message = {
-                'success': True,
-                'wireguard': client_vpn_config if not error else "Adding Wireguard config failed"
-            }
+                # TODO CHECK IF PEER IS ADDED PROPERLY.IF PEER ADITION WAS DONE PROPERLY AT THE SAME CHECK IF THE PEER IS ALLOCATED IS SAME_IP
+                if error is None:
+                    update = db.update(client,
+                       {'$set': {
+                           'usage': {
+                               'upload': 0,
+                               'download': 0
+                           },
+                           'pub_key': pub_key,
+                           'status': 'CONNECTED'
+                       }
+                       })
+                    message = {
+                        'success': True,
+                        'message': 'connected / Successfully shared VPN credentials..'
+                    }    
+                else:
+                    message = {
+                        'success': False,
+                        'message': 'peer is not added \n'+ error
+                    }    
+            else:
+                message = {
+                    'success': False,
+                    'message': 'Session details not added..'
+                }
         else:
             message = {
-                'success': False,
-                'message': 'Wrong details.'
-            }
+                    'success': False,
+                    'message': 'Wrong details..'
+                }
 
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)
@@ -138,39 +149,42 @@ class AddSessionPaymentSign(object):
         account_addr = str(account_addr)
         session_id = str(session_id)
         token = str(req.body['token'])
-        signature = {
-            'hash': str(req.body['signature']['hash']),
-            'index': int(req.body['signature']['index']),
-            'amount': str(req.body['signature']['amount']),
-            'final': req.body['signature']['final']
-        }
-        client = db.clients.find_one({
-            'account_addr': account_addr,
-            'session_id': session_id,
-            'token': token,
-            'status': 'CONNECTED'
-        })
-        if client:
-            _ = db.clients.find_one_and_update({
+
+        if req.body['signature']:
+            signature = {
+                'hash': str(req.body['signature']['hash']),
+                'index': int(req.body['signature']['index']),
+                'amount': str(req.body['signature']['amount']),
+                'final': req.body['signature']['final']
+            }
+            client = db.clients.find_one({
                 'account_addr': account_addr,
                 'session_id': session_id,
                 'token': token,
                 'status': 'CONNECTED'
-            }, {
-                '$push': {
-                    'signatures': signature
-                }
             })
-            if signature['final']:
-                end_session(session_id)
-            message = {
-                'success': True
-            }
+            if client:
+                _ = db.clients.update(client, 
+                    {
+                        '$push': {
+                            'signatures': signature
+                        }
+                    })
+                if signature['final']:
+                    end_session(session_id)
+                message = {
+                    'success': True
+                    'message': 'Successfully added payment sign'
+                }
+            else:
+                message = {
+                    'success': False,
+                    'message': 'Wrong details.'
+                }
         else:
             message = {
                 'success': False,
-                'message': 'Wrong details.'
+                'message': 'Invalid body parameters'
             }
-
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)

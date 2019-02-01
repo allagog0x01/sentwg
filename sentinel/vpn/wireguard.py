@@ -40,7 +40,6 @@ class Wireguard(object):
 
     def add_peer(self, pub_key):
         random_ip = ''
-        # TODO this is constant please define it globally
         file_path = WIREGUARD_DIR + 'client-{}'.format(pub_key[:4])
         i = 2
         #TODO ADD A ROBUST LOGIC TO ADD RANDOM IP from 10 ip range
@@ -57,9 +56,11 @@ class Wireguard(object):
             'PublicKey': pub_key,
             'AllowedIPs': random_ip
         }
-        # CHECK IF THE FILE DIRECTORY/FILE EXISTS and what kind of file is it
-        with open(file_path, 'w+') as f:
-            config.write(f)
+        try:
+            with open(file_path, 'w+') as f:
+                config.write(f)
+        except Exception as err:
+            return None,err
         #TODO: CAN YOU THINK OF EXCEPTIONS
         # print (self.add_peer_cmd.format(file_path))
         wg_addconf_proc = subprocess.Popen(self.add_peer_cmd.format(file_path), shell=True)
