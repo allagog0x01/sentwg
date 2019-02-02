@@ -23,28 +23,31 @@ def end_session(pub_key):
         'status': 'CONNECTED'
     })
     if session is not None:
-        session_id = session['session_id']
-        update_session_status(pub_key, 'DISCONNECTED')
-        disconnect_client(pub_key)
-        if 'signatures' in session and len(session['signatures']) > 0:
-            signature = session['signatures'][-1]
-            error, data = cosmos_call('get_vpn_payment', {
-                'amount': signature['amount'],
-                'session_id': session_id,
-                'counter': signature['index'],
-                'name': node.config['account']['name'],
-                'gas': DEFAULT_GAS,
-                'isfinal': True,
-                'password': node.config['account']['password'],
-                'sign': signature['hash']
-            })
-            if error is None:
-                tx = {
-                    'from_account_address': 'VPN_PAYMENT',
-                    'to_account_address': session['account_addr'],
-                    'tx_hash': data['hash'].encode()
-                }
-                error, data = add_tx(tx)
-                if error is None:
-                    error, data = update_session(session_id, session['token'], signature['amount'])
-            print(error, data)
+        discon = disconnect_client(pub_key)
+        if discon:
+            update_session_status(pub_key, 'DISCONNECTED')
+            if 'signatures' in session and len(session['signatures']) > 0:
+                signature = session['signatures'][-1]
+                error, data = cosmos_call('get_vpn_payment', {
+                    'amount': signature['amount'],
+                    'session_id': session['session_id'],
+                    'counter': signature['index'],
+                    'name': node.config['account']['name'],
+                    'gas': DEFAULT_GAS,
+                    'isfinal': True,
+                    'password': node.config['account']['password'],
+                    'sign': signature['hash']
+                })
+                if data is not None:
+                    tx = {
+                        'from_account_address': 'VPN_PAYMENT',
+                        'to_account_address': session['account_addr'],
+                        'tx_hash': data['hash'].encode()
+                    }
+                    error, data = add_tx(tx)
+                    if data is not None:
+                        error, data = update_session(session['session_id'], session['token'], signature['amount'])
+                print(error, data)
+            return True
+        else:
+            return False

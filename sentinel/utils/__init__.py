@@ -1,3 +1,3 @@
 # coding=utf-8
 from .fetch import fetch
-from .middlewares import JSONTranslator, ValidateRequest
+from .middlewares import ValidateRequest, JSONTranslator

@@ -27,15 +27,15 @@ class GetSessionUsage(object):
             'token': token,
             'status': 'CONNECTED'
         })
-        if client is None:
-            message = {
-                'success': False,
-                'message': 'Wrong details.'
-            }
-        else:
+        if client is not None:
             message = {
                 'success': True,
                 'usage': client['usage'] if 'usage' in client else None
+            }     
+        else:
+            message = {
+                'success': False,
+                'message': 'Wrong details.'
             }
 
         res.status = falcon.HTTP_200
@@ -63,17 +63,24 @@ class DisconnectClient(object):
             'token': token,
             'status': 'CONNECTED'
         })
-        if client is None:
+        if client is not None:
+            if end_session(client['pub_key']):
+                message = {
+                    'success': True,
+                    'message': 'Disconnected successfully.'
+                }
+            else:
+                message = {
+                    'success': False,
+                    'message': 'Not Disconnected.'
+                }
+
+        else:
             message = {
                 'success': False,
                 'message': 'Wrong details.'
             }
-        else:
-            end_session(client['pub_key'])
-            message = {
-                'success': True,
-                'message': 'Disconnected successfully.'
-            }
+            
 
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)

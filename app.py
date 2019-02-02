@@ -138,20 +138,21 @@ if __name__ == '__main__':
     start_new_thread(alive_job, ())
 
     updated_nodes = []
+    #Check the below code
     while True:
         parsed_config = wireguard.parse_wg_data()
         if len(parsed_config) > 0:
             for peer_data in parsed_config:
-                if 'latest_handshake' in peer_data.keys():
-                    if peer_data['latest_handshake'] is not None and peer_data['latest_handshake'] < 180 and \
-                            peer_data['pub_key'] not in updated_nodes:
-                        update_session_status(peer_data['pub_key'], 'CONNECTED')
-                        updated_nodes.append(peer_data['pub_key'])
-                        update_session_data(peer_data)
-                    elif peer_data['latest_handshake'] > 180 or peer_data['usage']['download'] >= LIMIT_1GB:
-                        end_session(peer_data['pub_key'])
-                        if peer_data['pub_key'] in updated_nodes:
-                            updated_nodes.remove(peer_data['pub_key'])
-                    else:
-                        update_session_data(peer_data)
+                #if 'latest_handshake' in peer_data.keys():
+                if peer_data['latest_handshake'] is not None and peer_data['latest_handshake'] < 180 and \
+                        peer_data['pub_key'] not in updated_nodes:
+                    update_session_status(peer_data['pub_key'], 'CONNECTED')
+                    updated_nodes.append(peer_data['pub_key'])
+                    update_session_data(peer_data)
+                elif peer_data['latest_handshake'] > 180 or peer_data['usage']['download'] >= LIMIT_1GB:
+                    end_session(peer_data['pub_key'])
+                    if peer_data['pub_key'] in updated_nodes:
+                        updated_nodes.remove(peer_data['pub_key'])
+                else:
+                    update_session_data(peer_data)
         time.sleep(10)

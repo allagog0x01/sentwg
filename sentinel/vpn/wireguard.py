@@ -1,11 +1,13 @@
 # coding=utf-8
 import subprocess
 import time
+from thread import start_new_thread
 
 from configparser import ConfigParser
 
 from ..config import WIREGUARD_DIR
 from ..node import node
+from ..helpers import end_session
 from .utils import convert_bandwidth, convert_to_seconds
 
 
@@ -38,6 +40,16 @@ class Wireguard(object):
             self.vpn_proc, self.pid = None, None
         return kill_proc.returncode
 
+    def check_connected(self, pub_key, file_path):
+        time.sleep(200)
+        wg_showconf_proc  = subprocess.Popen(self.getsession_cmd.format(file_path), shell=True, stdout=subprocess.PIPE)
+        wg_showconf_proc.wait()
+
+        pubkeys = [ line.split(':')[-1].strip() for line in wg_showconf_proc.stdout.read().splitlines() if 'peer' in line ]
+        if pub_key not in pubkeys:
+            end_session(pub_key)
+
+
     def add_peer(self, pub_key):
         random_ip = ''
         file_path = WIREGUARD_DIR + 'client-{}'.format(pub_key[:4])
@@ -65,8 +77,9 @@ class Wireguard(object):
         # print (self.add_peer_cmd.format(file_path))
         wg_addconf_proc = subprocess.Popen(self.add_peer_cmd.format(file_path), shell=True)
         wg_addconf_proc.wait()
-        # TODO WHAT IS THE SAFEST WAY TO PROCESS COMMANDS
 
+        # TODO WHAT IS THE SAFEST WAY TO PROCESS COMMANDS
+        start_new_thread(self.check_connected, (pub_key, file_path))
         # TODO RETURNING STRUCTURE
 
         return {
@@ -77,6 +90,7 @@ class Wireguard(object):
                    "ip": random_ip
                }, None
 
+    
     def parse_wg_data(self):
         session_proc = subprocess.Popen(self.getsession_cmd, shell=True, stdout=subprocess.PIPE)
         session_proc.wait()
@@ -91,7 +105,7 @@ class Wireguard(object):
                 time_secs = int(convert_to_seconds(line[-1].strip()))
             if 'transfer' in line:
                 line = line.split(':')
-                usage,error = convert_bandwidth(line[-1].strip())
+                usage = convert_bandwidth(line[-1].strip())
                 if not usage:
                     return []
             if pub_key and time_secs and usage:
