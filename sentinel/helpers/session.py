@@ -23,7 +23,7 @@ def end_session(pub_key):
         'status': 'CONNECTED'
     })
     if session is not None:
-        discon = disconnect_client(pub_key)
+        discon,err = disconnect_client(pub_key)
         if discon:
             update_session_status(pub_key, 'DISCONNECTED')
             if 'signatures' in session and len(session['signatures']) > 0:
@@ -48,6 +48,6 @@ def end_session(pub_key):
                     if data is not None:
                         error, data = update_session(session['session_id'], session['token'], signature['amount'])
                 print(error, data)
-            return True
+            return True, None
         else:
-            return False
+            return False,err

@@ -4,10 +4,9 @@ import time
 from thread import start_new_thread
 
 from configparser import ConfigParser
-
+from .helpers import disconnect_client
 from ..config import WIREGUARD_DIR
 from ..node import node
-from ..helpers import end_session
 from .utils import convert_bandwidth, convert_to_seconds
 
 
@@ -40,14 +39,14 @@ class Wireguard(object):
             self.vpn_proc, self.pid = None, None
         return kill_proc.returncode
 
-    def check_connected(self, pub_key, file_path):
-        time.sleep(200)
-        wg_showconf_proc  = subprocess.Popen(self.getsession_cmd.format(file_path), shell=True, stdout=subprocess.PIPE)
-        wg_showconf_proc.wait()
 
-        pubkeys = [ line.split(':')[-1].strip() for line in wg_showconf_proc.stdout.read().splitlines() if 'peer' in line ]
-        if pub_key not in pubkeys:
-            end_session(pub_key)
+    def check_connection(self,pub_key):
+        time.sleep(200)
+        parsed_config_data = self.parse_wg_data('check_connection')
+        for peer in parsed_config_data:
+            if peer['pubkey'] == pub_key and peer['latest_handshake'] is None:
+                end, err = disconnect_client(pub_key)
+
 
 
     def add_peer(self, pub_key):
@@ -75,11 +74,12 @@ class Wireguard(object):
             return None,err
         #TODO: CAN YOU THINK OF EXCEPTIONS
         # print (self.add_peer_cmd.format(file_path))
-        wg_addconf_proc = subprocess.Popen(self.add_peer_cmd.format(file_path), shell=True)
+        wg_addconf_proc = subprocess.Popen(self.add_peer_cmd.format(file_path), shell=True, stderr= subprocess.PIPE )
         wg_addconf_proc.wait()
-
+        if wg_addconf_proc.stderr.read():
+            return None, wg_addconf_proc.stderr.read()
         # TODO WHAT IS THE SAFEST WAY TO PROCESS COMMANDS
-        start_new_thread(self.check_connected, (pub_key, file_path))
+        start_new_thread(self.check_connection, (pub_key))
         # TODO RETURNING STRUCTURE
 
         return {
@@ -91,31 +91,44 @@ class Wireguard(object):
                }, None
 
     
-    def parse_wg_data(self):
+    def parse_wg_data(self, type = None):
+
         session_proc = subprocess.Popen(self.getsession_cmd, shell=True, stdout=subprocess.PIPE)
         session_proc.wait()
         lines_list = session_proc.stdout.read().splitlines()
         parsed_config = []
         pub_key, time_secs, usage = None, None, None
-        for line in lines_list:
-            if 'peer' in line:
-                pub_key = line.split(':')[-1].strip()
-            if 'latest handshake' in line:
-                line = line.split(':')
-                time_secs = int(convert_to_seconds(line[-1].strip()))
-            if 'transfer' in line:
-                line = line.split(':')
-                usage = convert_bandwidth(line[-1].strip())
-                if not usage:
-                    return []
-            if pub_key and time_secs and usage:
-                parsed_config.append({
-                    'pub_key': pub_key,
-                    'latest_handshake': time_secs,
-                    'usage': usage
-                })
-                pub_key, usage, time_secs = None, None, None
-        return parsed_config
+        if type == 'read_connection':
+            for line in lines_list:
+                if 'peer' in line:
+                    pub_key = line.split(':')[-1].strip()
+                if 'latest handshake' in line:
+                    line = line.split(':')
+                    time_secs = int(convert_to_seconds(line[-1].strip()))
+                if 'transfer' in line:
+                    line = line.split(':')
+                    usage = convert_bandwidth(line[-1].strip())
+                    if not usage:
+                        return []        
+                if pub_key and time_secs and usage:
+                    parsed_config.append({
+                        'pub_key': pub_key,
+                        'latest_handshake': time_secs,
+                        'usage': usage
+                    })
+                    pub_key, usage, time_secs = None, None, None
+            return parsed_config
+        if type == 'check_connection':
+            for line in lines_list:
+                if 'peer' in line:
+                    pub_key = line.split(':')[-1].strip()
+                if 'latest handshake' in line:
+                    line = line.split(':')
+                    time_secs = int(convert_to_seconds(line[-1].strip()))
+                if pub_key:
+                    parsed_config.append({'pub_key': pub_key, 'latest_handshake': time_secs })
+                    pub_key, time_secs = None, None  
 
+            return parsed_config
 
 wireguard = Wireguard()

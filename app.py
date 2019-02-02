@@ -150,7 +150,7 @@ if __name__ == '__main__':
                     updated_nodes.append(peer_data['pub_key'])
                     update_session_data(peer_data)
                 elif peer_data['latest_handshake'] > 180 or peer_data['usage']['download'] >= LIMIT_1GB:
-                    end_session(peer_data['pub_key'])
+                    end, err = end_session(peer_data['pub_key'])
                     if peer_data['pub_key'] in updated_nodes:
                         updated_nodes.remove(peer_data['pub_key'])
                 else:

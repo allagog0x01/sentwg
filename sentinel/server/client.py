@@ -64,17 +64,12 @@ class DisconnectClient(object):
             'status': 'CONNECTED'
         })
         if client is not None:
-            if end_session(client['pub_key']):
-                message = {
-                    'success': True,
-                    'message': 'Disconnected successfully.'
-                }
-            else:
-                message = {
-                    'success': False,
-                    'message': 'Not Disconnected.'
-                }
-
+            end, err = end_session(client['pub_key'])
+            print(err)
+            message = {
+                'success': True if end else False,
+                'message': 'Disconnected successfully.' if end else 'Not Disconnected \n' + err
+            }
         else:
             message = {
                 'success': False,

@@ -76,7 +76,7 @@ class GetVpnCredentials(object):
 
                 # TODO CHECK IF PEER IS ADDED PROPERLY.IF PEER ADITION WAS DONE PROPERLY AT THE SAME CHECK IF THE PEER IS ALLOCATED IS SAME_IP
             if client_vpn_config is not None:
-                    update = db.update(client,
+                    _ = db.update(client,
                        {'$set': {
                            'usage': {
                                'upload': 0,
