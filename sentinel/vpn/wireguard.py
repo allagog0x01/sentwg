@@ -108,7 +108,7 @@ class Wireguard(object):
                     time_secs = int(convert_to_seconds(line[-1].strip()))
                 if 'transfer' in line:
                     line = line.split(':')
-                    usage = convert_bandwidth(line[-1].strip())
+                    usage,err = convert_bandwidth(line[-1].strip())
                     if not usage:
                         return []        
                 if pub_key and time_secs and usage:
