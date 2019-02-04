@@ -69,37 +69,44 @@ class GetVpnCredentials(object):
             'account_addr': account_addr,
             'session_id': session_id,
             'token': token,
-            'status': 'ADDED_SESSION_DETAILS'
+            'status': {'$in':['ADDED_SESSION_DETAILS','Shared VPN credentials']}
          })
         if client is not None:
-            client_vpn_config, error = wireguard.add_peer(pub_key)
+            if client['status'] == 'ADDED_SESSION_DETAILS':
+                client_vpn_config, error = wireguard.add_peer(pub_key)
 
                 # TODO CHECK IF PEER IS ADDED PROPERLY.IF PEER ADITION WAS DONE PROPERLY AT THE SAME CHECK IF THE PEER IS ALLOCATED IS SAME_IP
-            if client_vpn_config is not None:
-                    _ = db.update(client,
-                       {'$set': {
-                           'usage': {
-                               'upload': 0,
-                               'download': 0
-                           },
-                           'pub_key': pub_key,
-                           'status': 'Shared VPN credentials'
-                       }
-                       })
-                    message = {
-                        'success': True,
-                        'message': 'Successfully shared VPN credentials..'
-                    }    
+                if client_vpn_config is not None:
+                        _ = db.clients.update_one(client,
+                           {'$set': {
+                               'usage': {
+                                   'upload': 0,
+                                   'download': 0
+                               },
+                               'pub_key': pub_key,
+                               'status': 'Shared VPN credentials'
+                           }
+                           })
+                        message = {
+                            'success': True,
+                            'message': 'Successfully shared VPN credentials..',
+                            'wireguard': client_vpn_config
+                        }    
+                else:
+                        message = {
+                            'success': False,
+                            'message': 'peer is not added \n'+ error
+                        }
             else:
-                    message = {
-                        'success': False,
-                        'message': 'peer is not added \n'+ error
-                    }    
-        else:
-            message = {
-                    'success': False,
-                    'message': 'Wrong details..'
+                message = {
+                    'success': True,
+                    'message': 'Already shared VPN credentials..'
                 }
+        else:
+             message = {
+                    'success': False,
+                    'message': 'Invalid Request / Wrong details..'
+                }                        
 
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)

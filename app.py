@@ -140,7 +140,7 @@ if __name__ == '__main__':
     updated_nodes = []
     #Check the below code
     while True:
-        parsed_config = wireguard.parse_wg_data()
+        parsed_config = wireguard.parse_wg_data('read_connection')
         if len(parsed_config) > 0:
             for peer_data in parsed_config:
                 #if 'latest_handshake' in peer_data.keys():

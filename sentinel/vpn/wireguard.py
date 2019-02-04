@@ -41,10 +41,11 @@ class Wireguard(object):
 
 
     def check_connection(self,pub_key):
+        
         time.sleep(200)
         parsed_config_data = self.parse_wg_data('check_connection')
         for peer in parsed_config_data:
-            if peer['pubkey'] == pub_key and peer['latest_handshake'] is None:
+            if peer['pub_key'] == pub_key and peer['latest_handshake'] is None:
                 end, err = disconnect_client(pub_key)
 
 
@@ -79,7 +80,7 @@ class Wireguard(object):
         if wg_addconf_proc.stderr.read():
             return None, wg_addconf_proc.stderr.read()
         # TODO WHAT IS THE SAFEST WAY TO PROCESS COMMANDS
-        start_new_thread(self.check_connection, (pub_key))
+        start_new_thread(self.check_connection, (pub_key,))
         # TODO RETURNING STRUCTURE
 
         return {
@@ -91,7 +92,7 @@ class Wireguard(object):
                }, None
 
     
-    def parse_wg_data(self, type = None):
+    def parse_wg_data(self, type = ''):
 
         session_proc = subprocess.Popen(self.getsession_cmd, shell=True, stdout=subprocess.PIPE)
         session_proc.wait()
