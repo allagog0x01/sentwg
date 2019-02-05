@@ -73,7 +73,7 @@ class GetVpnCredentials(object):
          })
         if client is not None:
             
-            client_vpn_config, error = wireguard.add_peer(pub_key)
+            client_vpn_config,pub_key,error = wireguard.add_peer(pub_key)
             # TODO CHECK IF PEER IS ADDED PROPERLY.IF PEER ADITION WAS DONE PROPERLY AT THE SAME CHECK IF THE PEER IS ALLOCATED IS SAME_IP
             if client_vpn_config is not None:
                     _ = db.clients.update_one(client,
@@ -82,7 +82,7 @@ class GetVpnCredentials(object):
                                'upload': 0,
                                'download': 0
                            },
-                           'pub_key': client_vpn_config['pub_key'],
+                           'pub_key': pub_key,
                            'status': 'SHARED_VPN_CREDS'
                        }
                        })

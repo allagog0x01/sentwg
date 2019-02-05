@@ -4,10 +4,11 @@ import time
 from thread import start_new_thread
 
 from configparser import ConfigParser
-from ..helpers import end_session
 from ..config import WIREGUARD_DIR
 from ..node import node
 from .utils import convert_bandwidth, convert_to_seconds
+
+# have to add wg-quick down
 
 
 class Wireguard(object):
@@ -43,10 +44,11 @@ class Wireguard(object):
     def check_connection(self, pub_key):
 
         time.sleep(300)
+        from ..helpers import end_session as session_end
         parsed_config_data = self.parse_wg_data('check_connection')
         for peer in parsed_config_data:
             if peer['pub_key'] == pub_key and peer['latest_handshake'] is None:
-                end, err = end_session(pub_key, 'NOT_CONNECTED')
+                end, err = session_end(pub_key, 'NOT_CONNECTED')
 
     def add_peer(self, pub_key):
         random_ip = ''
