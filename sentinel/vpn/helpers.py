@@ -10,6 +10,7 @@ def disconnect_client(pub_key):
     disconnect_proc = subprocess.Popen(cmd, shell=True, stderr = subprocess.PIPE)
     disconnect_proc.wait()
     if disconnect_proc.stderr.read():
+        print disconnect_proc.stderr.read()
         return False, disconnect_proc.stderr.read()
     return True,None    
     # parse the disconnect_proc and return error or wrong credentials
@@ -17,7 +18,8 @@ def disconnect_client(pub_key):
 def update_session_data(session_data):
     pub_key = session_data['pub_key']
     db.clients.find_one_and_update({
-        'pub_key': pub_key
+        'pub_key': pub_key,
+        'status': 'CONNECTED'
     }, {
         '$set': {
             'usage': {

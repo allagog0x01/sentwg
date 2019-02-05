@@ -7,23 +7,46 @@ from ..node import update_session
 from ..vpn import disconnect_client
 
 
-def update_session_status(pub_key, status):
-    _ = db.clients.find_one_and_update({
-        'pub_key': pub_key
-    }, {
-        '$set': {
-            'status': status
-        }
-    })
+def update_session_status(pub_key, status=''):
+    if status == 'CONNECTED':
+        _ = db.clients.find_one_and_update({
+            'pub_key': pub_key,
+            'status': 'SHARED_VPN_CREDS'
+        }, {
+            '$set': {
+                'status': status
+            }
+        })
+    else:
+        _ = db.clients.find_one_and_update({
+            'pub_key': pub_key,
+            'status': 'CONNECTED'
+        }, {
+            '$set': {
+                'status': status
+            }
+        })
 
 
-def end_session(pub_key):
+def end_session(pub_key, type=None):
+    if type == 'NOT_CONNECTED':
+        session = db.clients.find_one({
+            'pub_key': pub_key,
+            'status': 'SHARED_VPN_CREDS'
+        })
+        discon, err = disconnect_client(pub_key)
+        if discon:
+            update_session_status(pub_key, 'DISCONNECTED')
+            return True,None
+        else:
+            return False,err
+
     session = db.clients.find_one({
         'pub_key': pub_key,
         'status': 'CONNECTED'
     })
     if session is not None:
-        discon,err = disconnect_client(pub_key)
+        discon, err = disconnect_client(pub_key)
         if discon:
             update_session_status(pub_key, 'DISCONNECTED')
             if 'signatures' in session and len(session['signatures']) > 0:
@@ -46,8 +69,9 @@ def end_session(pub_key):
                     }
                     error, data = add_tx(tx)
                     if data is not None:
-                        error, data = update_session(session['session_id'], session['token'], signature['amount'])
+                        error, data = update_session(
+                            session['session_id'], session['token'], signature['amount'])
                 print(error, data)
             return True, None
         else:
-            return False,err
+            return False, err

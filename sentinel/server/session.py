@@ -69,39 +69,33 @@ class GetVpnCredentials(object):
             'account_addr': account_addr,
             'session_id': session_id,
             'token': token,
-            'status': {'$in':['ADDED_SESSION_DETAILS','Shared VPN credentials']}
+            'status': 'ADDED_SESSION_DETAILS'
          })
         if client is not None:
-            if client['status'] == 'ADDED_SESSION_DETAILS':
-                client_vpn_config, error = wireguard.add_peer(pub_key)
-
-                # TODO CHECK IF PEER IS ADDED PROPERLY.IF PEER ADITION WAS DONE PROPERLY AT THE SAME CHECK IF THE PEER IS ALLOCATED IS SAME_IP
-                if client_vpn_config is not None:
-                        _ = db.clients.update_one(client,
-                           {'$set': {
-                               'usage': {
-                                   'upload': 0,
-                                   'download': 0
-                               },
-                               'pub_key': pub_key,
-                               'status': 'Shared VPN credentials'
-                           }
-                           })
-                        message = {
-                            'success': True,
-                            'message': 'Successfully shared VPN credentials..',
-                            'wireguard': client_vpn_config
-                        }    
-                else:
-                        message = {
-                            'success': False,
-                            'message': 'peer is not added \n'+ error
-                        }
+            
+            client_vpn_config, error = wireguard.add_peer(pub_key)
+            # TODO CHECK IF PEER IS ADDED PROPERLY.IF PEER ADITION WAS DONE PROPERLY AT THE SAME CHECK IF THE PEER IS ALLOCATED IS SAME_IP
+            if client_vpn_config is not None:
+                    _ = db.clients.update_one(client,
+                       {'$set': {
+                           'usage': {
+                               'upload': 0,
+                               'download': 0
+                           },
+                           'pub_key': client_vpn_config['pub_key'],
+                           'status': 'SHARED_VPN_CREDS'
+                       }
+                       })
+                    message = {
+                        'success': True,
+                        'message': 'Successfully SHARED_VPN_CREDS..',
+                        'wireguard': client_vpn_config
+                    }    
             else:
-                message = {
-                    'success': True,
-                    'message': 'Already shared VPN credentials..'
-                }
+                    message = {
+                        'success': False,
+                        'message': 'peer is not added \n'+ error
+                    }
         else:
              message = {
                     'success': False,

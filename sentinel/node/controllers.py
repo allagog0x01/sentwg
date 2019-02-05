@@ -143,7 +143,7 @@ def get_free_coins():
     body = {
         "address": node.config['account']['address']
     }
-    url = 'http://tm-api.sentinelgroup.io:3000/get-tokens'
+    url = 'http://209.182.217.171:3000/get-tokens'
     try:
         response = fetch().post(url, json=body)
         if response and response.status_code == 200:

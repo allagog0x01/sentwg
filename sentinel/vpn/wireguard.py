@@ -4,7 +4,7 @@ import time
 from thread import start_new_thread
 
 from configparser import ConfigParser
-from .helpers import disconnect_client
+from ..helpers import end_session
 from ..config import WIREGUARD_DIR
 from ..node import node
 from .utils import convert_bandwidth, convert_to_seconds
@@ -29,7 +29,8 @@ class Wireguard(object):
             node.config['wireguard']['pub_key'] = f.readline().strip()
 
     def start(self):
-        self.vpn_proc = subprocess.Popen(self.start_cmd, shell=True, stdout=subprocess.PIPE)
+        self.vpn_proc = subprocess.Popen(
+            self.start_cmd, shell=True, stdout=subprocess.PIPE)
         self.vpn_proc.wait()
 
     def stop(self):
@@ -39,22 +40,19 @@ class Wireguard(object):
             self.vpn_proc, self.pid = None, None
         return kill_proc.returncode
 
+    def check_connection(self, pub_key):
 
-    def check_connection(self,pub_key):
-        
-        time.sleep(200)
+        time.sleep(300)
         parsed_config_data = self.parse_wg_data('check_connection')
         for peer in parsed_config_data:
             if peer['pub_key'] == pub_key and peer['latest_handshake'] is None:
-                end, err = disconnect_client(pub_key)
-
-
+                end, err = end_session(pub_key, 'NOT_CONNECTED')
 
     def add_peer(self, pub_key):
         random_ip = ''
         file_path = WIREGUARD_DIR + 'client-{}'.format(pub_key[:4])
         i = 2
-        #TODO ADD A ROBUST LOGIC TO ADD RANDOM IP from 10 ip range
+        # TODO ADD A ROBUST LOGIC TO ADD RANDOM IP from 10 ip range
         # TODO INCRESE AND THE NUMBER OF IP's available.
         # TODO WHAT IF RANDOM_IP IS NOT ASSIGNED.
         while i < 255:
@@ -72,29 +70,31 @@ class Wireguard(object):
             with open(file_path, 'w+') as f:
                 config.write(f)
         except Exception as err:
-            return None,err
-        #TODO: CAN YOU THINK OF EXCEPTIONS
+            return None, None, err
+        # TODO: CAN YOU THINK OF EXCEPTIONS
         # print (self.add_peer_cmd.format(file_path))
-        wg_addconf_proc = subprocess.Popen(self.add_peer_cmd.format(file_path), shell=True, stderr= subprocess.PIPE )
+        wg_addconf_proc = subprocess.Popen(self.add_peer_cmd.format(
+            file_path), shell=True, stderr=subprocess.PIPE)
         wg_addconf_proc.wait()
         if wg_addconf_proc.stderr.read():
-            return None, wg_addconf_proc.stderr.read()
+            return None, None, wg_addconf_proc.stderr.read()
         # TODO WHAT IS THE SAFEST WAY TO PROCESS COMMANDS
         start_new_thread(self.check_connection, (pub_key,))
+        if pub_key in self.parse_wg_data('get_connected_pub_keys'):
+            return {
+                "Publickey": node.config['wireguard']['pub_key'],
+                "EndPoint": node.ip + ":" + str(node.config['wireguard']['port']),
+                "AllowedIPs": '0.0.0.0/0',
+                "PersistentKeepAlive": 21,
+                "ip": random_ip
+            }, pub_key, None
+
         # TODO RETURNING STRUCTURE
 
-        return {
-                   "Publickey": node.config['wireguard']['pub_key'],
-                   "EndPoint": node.ip + ":" + str(node.config['wireguard']['port']),
-                   "AllowedIPs": '0.0.0.0/0',
-                   "PersistentKeepAlive": 21,
-                   "ip": random_ip
-               }, None
+    def parse_wg_data(self, type=''):
 
-    
-    def parse_wg_data(self, type = ''):
-
-        session_proc = subprocess.Popen(self.getsession_cmd, shell=True, stdout=subprocess.PIPE)
+        session_proc = subprocess.Popen(
+            self.getsession_cmd, shell=True, stdout=subprocess.PIPE)
         session_proc.wait()
         lines_list = session_proc.stdout.read().splitlines()
         parsed_config = []
@@ -108,9 +108,9 @@ class Wireguard(object):
                     time_secs = int(convert_to_seconds(line[-1].strip()))
                 if 'transfer' in line:
                     line = line.split(':')
-                    usage,err = convert_bandwidth(line[-1].strip())
+                    usage, err = convert_bandwidth(line[-1].strip())
                     if not usage:
-                        return []        
+                        return []
                 if pub_key and time_secs and usage:
                     parsed_config.append({
                         'pub_key': pub_key,
@@ -127,9 +127,17 @@ class Wireguard(object):
                     line = line.split(':')
                     time_secs = int(convert_to_seconds(line[-1].strip()))
                 if pub_key:
-                    parsed_config.append({'pub_key': pub_key, 'latest_handshake': time_secs })
-                    pub_key, time_secs = None, None  
+                    parsed_config.append(
+                        {'pub_key': pub_key, 'latest_handshake': time_secs})
+                    pub_key, time_secs = None, None
 
             return parsed_config
+        if type == 'get_connected_pub_keys':
+            for line in lines_list:
+                if 'peer' in line:
+                    pub_key = line.split(':')[-1].strip()
+                    parsed_config.append(pub_key)
+            return parsed_config
+
 
 wireguard = Wireguard()
