@@ -17,6 +17,16 @@ def update_session_status(pub_key, status=''):
                 'status': status
             }
         })
+    elif status == 'NOTCONNECTED':
+        _ = db.clients.find_one_and_update({
+            'pub_key': pub_key,
+            'status': 'SHARED_VPN_CREDS'
+        }, {
+            '$set': {
+                'status': status
+            }
+        }) 
+
     else:
         _ = db.clients.find_one_and_update({
             'pub_key': pub_key,
@@ -36,7 +46,7 @@ def end_session(pub_key, type=None):
         })
         discon, err = disconnect_client(pub_key)
         if discon:
-            update_session_status(pub_key, 'DISCONNECTED')
+            update_session_status(pub_key, 'NOTCONNECTED')
             return True,None
         else:
             return False,err

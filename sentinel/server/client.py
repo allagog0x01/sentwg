@@ -68,7 +68,7 @@ class DisconnectClient(object):
             print(err)
             message = {
                 'success': True if end else False,
-                'message': 'Disconnected successfully.' if end else 'Not Disconnected \n' + err
+                'message': 'Disconnected successfully.' if end else 'Not Disconnected '+str(err)
             }
         else:
             message = {
