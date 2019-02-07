@@ -37,7 +37,6 @@ def end_session(pub_key, type=None):
         discon, err = wireguard.disconnect_client(pub_key)
         if discon:
             update_session_status(pub_key, 'DISCONNECTED')
-            return True,None
         else:
             return False,str(err)
 
@@ -75,3 +74,5 @@ def end_session(pub_key, type=None):
             return True, None
         else:
             return False, str(err)
+    else:
+        return False, 'Details not Found..'
