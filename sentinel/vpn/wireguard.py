@@ -1,5 +1,6 @@
 # coding=utf-8
 import subprocess
+import sys.exit
 import time
 from thread import start_new_thread
 
@@ -19,10 +20,18 @@ class Wireguard(object):
         self.stop_cmd = 'wg-quick down wg0'
         self.add_peer_cmd = 'wg addconf wg0 {}'
         self.getsession_cmd = 'wg show wg0'
-        self.allocated_ips = []
+        self.allocated_ips = {}
         if show_output is False:
             self.init_cmd += ' >> /dev/null 2>&1'
             self.start_cmd += ' >> /dev/null 2>&1'
+        check_wg_proc = subprocess.Popen(self.getsession_cmd,shell=True,stdout=subprocess.PIPE)
+        check_wg_proc.wait()
+        if check_wg_proc.stdout.read() :
+            remove_old_wg_proc = subprocess.Popen(self.stop_cmd,shell=True,stderr=subprocess.PIPE)
+            remove_old_wg_proc.wait()
+            if    not 'ip link delete dev wg0' in remove_old_wg_proc.stderr.read():
+                print("wg interface cannot be stopped")
+                exit()
         init_proc = subprocess.Popen(self.init_cmd, shell=True)
         init_proc.wait()
         time.sleep(2)
@@ -31,15 +40,14 @@ class Wireguard(object):
 
     def start(self):
         self.vpn_proc = subprocess.Popen(
-            self.start_cmd, shell=True, stdout=subprocess.PIPE)
+            self.start_cmd, shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         self.vpn_proc.wait()
+
+
 
     def stop(self):
         kill_proc = subprocess.Popen(self.stop_cmd, shell=True)
         kill_proc.wait()
-        if kill_proc.returncode == 0:
-            self.vpn_proc, self.pid = None, None
-        return kill_proc.returncode
 
     def check_connection(self, pub_key):
 
@@ -49,6 +57,7 @@ class Wireguard(object):
         for peer in parsed_config_data:
             if peer['pub_key'] == pub_key and peer['latest_handshake'] is None:
                 end, err = session_end(pub_key, 'NOT_CONNECTED')
+                break
 
     def add_peer(self, pub_key):
         random_ip = ''
@@ -58,9 +67,9 @@ class Wireguard(object):
         # TODO INCRESE AND THE NUMBER OF IP's available.
         # TODO WHAT IF RANDOM_IP IS NOT ASSIGNED.
         while i < 255:
-            if '10.0.0.{}'.format(str(i)) not in self.allocated_ips:
+            if '10.0.0.{}'.format(str(i)) not in self.allocated_ips.values():
                 random_ip = '10.0.0.{}'.format(str(i))
-                self.allocated_ips.append(random_ip)
+                self.allocated_ips[pub_key] = random_ip
                 break
             i += 1
         config = ConfigParser()
@@ -90,6 +99,8 @@ class Wireguard(object):
                 "PersistentKeepAlive": 21,
                 "ip": random_ip
             }, pub_key, None
+        else:
+            return None,None,"public key not added to the wireguard interface"
 
         # TODO RETURNING STRUCTURE
 
@@ -110,9 +121,7 @@ class Wireguard(object):
                     time_secs = int(convert_to_seconds(line[-1].strip()))
                 if 'transfer' in line:
                     line = line.split(':')
-                    usage, err = convert_bandwidth(line[-1].strip())
-                    if not usage:
-                        return []
+                    usage = convert_bandwidth(line[-1].strip())
                 if pub_key and time_secs and usage:
                     parsed_config.append({
                         'pub_key': pub_key,
@@ -140,6 +149,19 @@ class Wireguard(object):
                     pub_key = line.split(':')[-1].strip()
                     parsed_config.append(pub_key)
             return parsed_config
+
+    def disconnect_client(self,pub_key):
+    cmd = 'wg set wg0 peer {} remove'.format(pub_key)
+    disconnect_proc = subprocess.Popen(cmd, shell=True, stderr = subprocess.PIPE)
+    disconnect_proc.wait()
+    if disconnect_proc.stderr.read():
+        print disconnect_proc.stderr.read()
+        return False, disconnect_proc.stderr.read()
+    self.allocated_ips.pop(pub_key)
+    return True,None    
+    # parse the disconnect_proc and return error or wrong credentials
+
+
 
 
 wireguard = Wireguard()

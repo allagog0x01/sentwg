@@ -94,7 +94,7 @@ class GetVpnCredentials(object):
             else:
                     message = {
                         'success': False,
-                        'message': 'peer is not added \n'+ error
+                        'message': 'peer is not added \n'+ str(error)
                     }
         else:
              message = {

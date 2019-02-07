@@ -4,7 +4,7 @@ from ..db import db
 from ..node import add_tx
 from ..node import node
 from ..node import update_session
-from ..vpn import disconnect_client
+from ..vpn import wireguard
 
 
 def update_session_status(pub_key, status=''):
@@ -34,19 +34,19 @@ def end_session(pub_key, type=None):
             'pub_key': pub_key,
             'status': 'SHARED_VPN_CREDS'
         })
-        discon, err = disconnect_client(pub_key)
+        discon, err = wireguard.disconnect_client(pub_key)
         if discon:
             update_session_status(pub_key, 'DISCONNECTED')
             return True,None
         else:
-            return False,err
+            return False,str(err)
 
     session = db.clients.find_one({
         'pub_key': pub_key,
         'status': 'CONNECTED'
     })
     if session is not None:
-        discon, err = disconnect_client(pub_key)
+        discon, err = wireguard.disconnect_client(pub_key)
         if discon:
             update_session_status(pub_key, 'DISCONNECTED')
             if 'signatures' in session and len(session['signatures']) > 0:
@@ -74,4 +74,4 @@ def end_session(pub_key, type=None):
                 print(error, data)
             return True, None
         else:
-            return False, err
+            return False, str(err)

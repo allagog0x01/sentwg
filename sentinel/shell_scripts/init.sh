@@ -15,7 +15,7 @@ echo 'DNS = 208.67.222.222,208.67.220.220' >> ${VPNCONFIG} && \
 echo 'ListenPort = 5253' >> ${VPNCONFIG} && \
 echo 'PrivateKey = '$(cat $VPNDIR/private) >> ${VPNCONFIG}
 
-iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -o eth0  -j MASQUERADE
 iptables-save
 # Firewall
 
