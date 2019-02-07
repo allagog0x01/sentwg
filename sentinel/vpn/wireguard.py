@@ -113,8 +113,7 @@ class Wireguard(object):
 
         # TODO RETURNING STRUCTURE
 
-    def parse_wg_data(self, type=''):
-
+    def parse_wg_data(self):
         session_proc = subprocess.Popen(
             self.getsession_cmd, shell=True, stdout=subprocess.PIPE)
         session_proc.wait()
