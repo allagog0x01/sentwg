@@ -31,8 +31,9 @@ class GetSessionUsage(object):
         if client is not None:
             message = {
                 'success': True,
-                'usage': client['usage'] if 'usage' in client else None
-            }     
+                'usage': { "up" : client['usage']['upload'],
+                "down":client['usage']['download'] }
+            }   
         else:
             message = {
                 'success': False,
