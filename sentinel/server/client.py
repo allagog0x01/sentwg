@@ -3,7 +3,7 @@ import json
 import falcon
 from ..db import db
 from ..helpers import end_session
-
+import logging
 
 class GetSessionUsage(object):
     def on_post(self, req, res, account_addr, session_id):
@@ -20,6 +20,7 @@ class GetSessionUsage(object):
         account_addr = str(account_addr)
         session_id = str(session_id)
         token = str(req.body['token'])
+        logger = logging.getLogger(__name__)
 
         client = db.clients.find_one({
             'account_addr': account_addr,
@@ -37,7 +38,9 @@ class GetSessionUsage(object):
                 'success': False,
                 'message': 'Wrong details.'
             }
-
+            logger.warning('someOne trying get sessionUsage with wrong details')
+        
+        
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)
 
@@ -56,7 +59,8 @@ class DisconnectClient(object):
         account_addr = str(account_addr)
         session_id = str(session_id)
         token = str(req.body['token'])
-
+        logger = logging.getLogger(__name__)
+        
         client = db.clients.find_one({
             'account_addr': account_addr,
             'session_id': session_id,
@@ -80,7 +84,8 @@ class DisconnectClient(object):
                 'success': False,
                 'message': 'Wrong details.'
             }
+            logger.warning('someOne trying get disconnect with wrong details')
             
-
+        logger.info(message)
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)

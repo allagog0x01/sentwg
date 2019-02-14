@@ -21,6 +21,7 @@ def update_session_data(session_data):
     })
 
 
+
 def get_sessions():
     sessions = []
     data = db.clients.find({

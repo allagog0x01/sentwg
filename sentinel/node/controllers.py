@@ -4,7 +4,8 @@ from .node import node
 from ..config import MASTER_NODE_URL
 from ..config import VERSION
 from ..utils import fetch
-
+import logging
+logger = logging.getLogger(__name__)
 
 def list_node():
     body = {
@@ -26,6 +27,7 @@ def list_node():
                    'message': 'Response status code is not 200.'
                }, None
     except Exception as error:
+        logger.error(error,exc_info=True)
         return str(error), None
 
 
@@ -61,6 +63,7 @@ def update_node(update_type):
                    'message': 'Response status code is not 200.'
                }, None
     except Exception as error:
+        logger.error(error,exc_info=True)
         return str(error), None
 
 
@@ -85,6 +88,7 @@ def update_sessions(sessions):
                    'message': 'Response status code is not 200.'
                }, None
     except Exception as error:
+        logger.error(error,exc_info=True)
         return str(error), None
 
 
@@ -111,6 +115,7 @@ def update_session(_id, token, amount):
                    'message': 'Response status code is not 200.'
                }, None
     except Exception as error:
+        logger.error(error,exc_info=True)
         return str(error), None
 
 
@@ -136,6 +141,7 @@ def add_tx(tx):
                    'message': 'Response status code is not 200.'
                }, None
     except Exception as error:
+        logger.error(error,exc_info=True)
         return str(error), None
 
 
@@ -153,4 +159,5 @@ def get_free_coins():
             'message': 'Response status code is not 200.'
         }
     except Exception as error:
+        logger.error(error,exc_info=True)
         return str(error)

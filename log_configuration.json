@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+      "simple": {
+          "format": "%(asctime)s -file_name %(name)s -function_name %(funcName)s- line_number %(lineno)s- %(levelname)s - %(message)s"
+      }
+  },
+
+  "handlers": {
+      "file_handler": {
+          "class": "logging.handlers.RotatingFileHandler",
+          "level": "DEBUG",
+          "formatter": "simple",
+          "filename": "sentwg_logging.log",
+          "encoding": "utf8",
+          "maxBytes": 10485760,
+          "backupCount": 20
+      },
+      "console":{
+        "class": "logging.StreamHandler",
+            "level": "DEBUG",
+          "formatter": "simple"
+          
+      }
+  },
+
+  "root":{
+        "level": "DEBUG",
+        "handlers":["file_handler","console"]
+  }
+  
+}

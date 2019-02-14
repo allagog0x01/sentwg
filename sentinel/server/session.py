@@ -2,6 +2,7 @@
 import json
 
 import falcon
+import logging
 
 from ..db import db
 from ..helpers import end_session
@@ -39,7 +40,8 @@ class AddSessionDetails(object):
                 'success': True,
                 'message': 'Session details successfully added.'
             }
-
+        loger = logging.getLogger(__name__)
+        loger.warning(message)
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)
 
@@ -101,6 +103,9 @@ class GetVpnCredentials(object):
                     'success': False,
                     'message': 'Invalid Request / Wrong details..'
                 }                        
+       
+        loger = logging.getLogger(__name__)
+        loger.warning(message)
 
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)
@@ -163,5 +168,9 @@ class AddSessionPaymentSign(object):
                 'success': False,
                 'message': 'missing body parameters'
             }
+        
+        loger = logging.getLogger(__name__)
+        loger.warning(message)
+        
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)

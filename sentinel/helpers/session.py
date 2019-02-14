@@ -5,7 +5,9 @@ from ..node import add_tx
 from ..node import node
 from ..node import update_session
 from ..vpn import wireguard
+import logging
 
+logger = logging.getLogger(__name__)
 
 def update_session_status(pub_key, status=''):
     if status == 'CONNECTED':
@@ -26,7 +28,7 @@ def update_session_status(pub_key, status=''):
                 'status': status
             }
         })
-
+    logging.warning("client session status Updated")
 
 def end_session(pub_key, type=None):
     if type == 'NOT_CONNECTED':
