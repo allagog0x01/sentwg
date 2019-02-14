@@ -147,7 +147,7 @@ if __name__ == '__main__':
                     update_session_data(peer_data)
                     client = db.clients.find_one(
                         {'pub_key': peer_data['pub_key'], 'status': 'CONNECTED'})
-                    if client is not None and client['max_usage']['down'] <= client['usage']['down']:
+                    if client is not None and client['max_usage']['down'] <= client['usage']['download']:
                         end, err = end_session(peer_data['pub_key'])
                         if end:
                             print('session ended')
