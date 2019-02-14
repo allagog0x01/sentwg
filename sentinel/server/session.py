@@ -16,7 +16,7 @@ class AddSessionDetails(object):
         session_id = str(session_id)
         # TODO ADD TO CHECK TOKEN and also validate the incoming token for it's size type and any other
         token = str(req.body['token'])
-        max_usage = str(req.body['maxUsage'])
+        max_usage = req.body['maxUsage']
 
         client = db.clients.find_one_and_update({
             'account_addr': account_addr,
