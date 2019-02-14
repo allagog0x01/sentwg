@@ -30,8 +30,9 @@ class GetSessionUsage(object):
         if client is not None:
             message = {
                 'success': True,
-                'usage': client['usage'] if 'usage' in client else None
-            }     
+                'usage': {"up": client['usage']['upload'],
+                          "down": client['usage']['download']}
+            }
         else:
             message = {
                 'success': False,
@@ -74,13 +75,12 @@ class DisconnectClient(object):
                 message = {
                     'success': False,
                     'message': 'Not Disconnected..' + str(err)
-                }    
+                }
         else:
             message = {
                 'success': False,
                 'message': 'Wrong details.'
             }
-            
 
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)
