@@ -155,7 +155,18 @@ class AddSessionPaymentSign(object):
                         }
                     })
                 if signature['final']:
-                    end_session(session_id)
+                    end,err = end_session(client['pub_key'])
+
+                    if end:
+                        message = {
+                            'success': True,
+                            'message': 'Successfully done payment session ended'
+                        }
+                    else:
+                        message = {
+                            'success': False,
+                            'message':'something went wrong session not ended'
+                        }    
                 else:    
                     message = {
                         'success': True,
