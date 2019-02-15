@@ -22,7 +22,7 @@ def update_session_status(pub_key, status=''):
     else:
         _ = db.clients.find_one_and_update({
             'pub_key': pub_key,
-            'status': {'$in':['CONNECTED','SHARED_VPN_CREDS']}
+            'status': {'$in':['CONNECTED','SHARED_VPN_CREDS','LIMIT_EXCEEDED']}
         }, {
             '$set': {
                 'status': status

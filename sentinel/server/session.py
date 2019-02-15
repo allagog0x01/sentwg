@@ -17,14 +17,15 @@ class AddSessionDetails(object):
         session_id = str(session_id)
         # TODO ADD TO CHECK TOKEN and also validate the incoming token for it's size type and any other
         token = str(req.body['token'])
-
+        maxUsage = req.body['maxUsage']
         client = db.clients.find_one_and_update({
             'account_addr': account_addr,
             'session_id': session_id,
             'token':token
             },
             {'$set':{
-                         'status': 'ADDED_SESSION_DETAILS'
+                         'status': 'ADDED_SESSION_DETAILS',
+                         'max_usage':maxUsage
                      }
             }
         ,upsert=True)
@@ -142,7 +143,9 @@ class AddSessionPaymentSign(object):
                 'account_addr': account_addr,
                 'session_id': session_id,
                 'token': token,
-                'status': 'CONNECTED'
+                'status': {'$in':[
+                                'CONNECTED',
+                                'LIMIT_EXCEEDED']}
             })
             if client is not None:
                 _ = db.clients.update(client, 

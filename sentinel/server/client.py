@@ -33,7 +33,8 @@ class GetSessionUsage(object):
                 'success': True,
                 'usage': { "up" : client['usage']['upload'],
                 "down":client['usage']['download'] }
-            }   
+            }
+            logger.info(message)   
         else:
             message = {
                 'success': False,
@@ -66,7 +67,9 @@ class DisconnectClient(object):
             'account_addr': account_addr,
             'session_id': session_id,
             'token': token,
-            'status': 'CONNECTED'
+            'status': {'$in':[
+                'CONNECTED',
+                'LIMIT_EXCEEDED']}
         })
         if client is not None:
             end, err = end_session(client['pub_key'])

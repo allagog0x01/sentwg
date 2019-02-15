@@ -30,5 +30,5 @@ class ValidateRequest(object):
                 'success': False,
                 'message': 'Token is missing'
             }
-           logger.warning(message) 
+            logger.warning(message) 
         #TODO response has to be delivered from here

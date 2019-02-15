@@ -19,7 +19,7 @@ COPY --from=deps /root/speedtest.py /usr/lib/python2.7/site-packages/
 ADD sentinel /root/sentinel
 ADD app.py run.sh config /root/
 RUN mkdir /root/.sentinel && mv /root/config /root/.sentinel/config
-
+ADD log_configuration.json /root/
 ENV SENT_ENV=DEV
 
 RUN echo '@testing http://nl.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
