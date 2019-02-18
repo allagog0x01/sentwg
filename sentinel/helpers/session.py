@@ -44,7 +44,7 @@ def end_session(pub_key, type=None):
 
     session = db.clients.find_one({
         'pub_key': pub_key,
-        'status': 'CONNECTED'
+        'status': {'$in':['CONNECTED','LIMIT_EXCEEDED']}
     })
     if session is not None:
         discon, err = wireguard.disconnect_client(pub_key)

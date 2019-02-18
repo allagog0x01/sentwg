@@ -65,7 +65,7 @@ class GetVpnCredentials(object):
         token = str(req.body['token'])
         # TODO ADD STRICT VALIDATION FOR PUBLIC KEYS
         pub_key = str(req.body['pub_key'])
-
+        loger = logging.getLogger(__name__)
         # TODO: WHAT IS THIS DOING.
 
         client = db.clients.find_one({
@@ -97,15 +97,16 @@ class GetVpnCredentials(object):
             else:
                     message = {
                         'success': False,
-                        'message': 'peer is not added \n'+ str(error)
+                        'message': 'peer is not added'
                     }
+                    loger.error(error,exc_info=True);
         else:
              message = {
                     'success': False,
                     'message': 'Invalid Request / Wrong details..'
                 }                        
        
-        loger = logging.getLogger(__name__)
+        
         loger.warning(message)
 
         res.status = falcon.HTTP_200
