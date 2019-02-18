@@ -1,33 +1,33 @@
 {
-  "version": 1,
-  "disable_existing_loggers": false,
-  "formatters": {
-      "simple": {
-          "format": "%(asctime)s -%(name)s - %(funcName)s- line_number %(lineno)s- %(levelname)s - %(message)s"
-      }
-  },
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "simple": {
+            "format": "%(asctime)s -%(name)s - %(funcName)s- line_number %(lineno)s- %(levelname)s - %(message)s"
+        }
+    },
 
-  "handlers": {
-      "file_handler": {
-          "class": "logging.handlers.RotatingFileHandler",
-          "level": "DEBUG",
-          "formatter": "simple",
-          "filename": "sentwg_logging.log",
-          "encoding": "utf8",
-          "maxBytes": 10485760,
-          "backupCount": 20
-      },
-      "console":{
-        "class": "logging.StreamHandler",
+    "handlers": {
+        "file_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "INFO",
+            "formatter": "simple",
+            "filename": "sentwg_logging.log",
+            "encoding": "utf8",
+            "maxBytes": 10485760,
+            "backupCount": 20
+        },
+        "console": {
+            "class": "logging.StreamHandler",
             "level": "ERROR",
-          "formatter": "simple"
-          
-      }
-  },
+            "formatter": "simple"
 
-  "root":{
+        }
+    },
+
+    "root": {
         "level": "DEBUG",
-        "handlers":["file_handler","console"]
-  }
-  
+        "handlers": ["file_handler", "console"]
+    }
+
 }

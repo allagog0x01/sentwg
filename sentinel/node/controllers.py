@@ -7,6 +7,7 @@ from ..utils import fetch
 import logging
 logger = logging.getLogger(__name__)
 
+
 def list_node():
     body = {
         'txHash': node.config['register']['hash']
@@ -19,15 +20,15 @@ def list_node():
             if data['success']:
                 return None, data
             return {
-                       'code': 2,
-                       'message': 'Response data success is False.'
-                   }, None
+                'code': 2,
+                'message': 'Response data success is False.'
+            }, None
         return {
-                   'code': 2,
-                   'message': 'Response status code is not 200.'
-               }, None
+            'code': 2,
+            'message': 'Response status code is not 200.'
+        }, None
     except Exception as error:
-        logger.error(error,exc_info=True)
+        logger.error(error, exc_info=True)
         return str(error), None
 
 
@@ -55,15 +56,15 @@ def update_node(update_type):
             if data['success']:
                 return None, data
             return {
-                       'code': 2,
-                       'message': 'Response data success is False.'
-                   }, None
+                'code': 2,
+                'message': 'Response data success is False.'
+            }, None
         return {
-                   'code': 2,
-                   'message': 'Response status code is not 200.'
-               }, None
+            'code': 2,
+            'message': 'Response status code is not 200.'
+        }, None
     except Exception as error:
-        logger.error(error,exc_info=True)
+        logger.error(error, exc_info=True)
         return str(error), None
 
 
@@ -72,7 +73,8 @@ def update_sessions(sessions):
         'token': node.config['register']['token'],
         'sessions': sessions
     }
-    url = MASTER_NODE_URL + '/nodes/' + node.config['account']['address'] + '/sessions'
+    url = MASTER_NODE_URL + '/nodes/' + \
+        node.config['account']['address'] + '/sessions'
     try:
         response = fetch().put(url, json=body)
         if response and response.status_code == 200:
@@ -80,15 +82,15 @@ def update_sessions(sessions):
             if data['success']:
                 return None, data
             return {
-                       'code': 2,
-                       'message': 'Response data success is False.'
-                   }, None
+                'code': 2,
+                'message': 'Response data success is False.'
+            }, None
         return {
-                   'code': 2,
-                   'message': 'Response status code is not 200.'
-               }, None
+            'code': 2,
+            'message': 'Response status code is not 200.'
+        }, None
     except Exception as error:
-        logger.error(error,exc_info=True)
+        logger.error(error, exc_info=True)
         return str(error), None
 
 
@@ -99,7 +101,8 @@ def update_session(_id, token, amount):
         'sessionToken': token,
         'sessionAmount': amount
     }
-    url = MASTER_NODE_URL + '/nodes/' + node.config['account']['address'] + '/sessions/' + _id
+    url = MASTER_NODE_URL + '/nodes/' + \
+        node.config['account']['address'] + '/sessions/' + _id
     try:
         response = fetch().put(url, json=body)
         if response and response.status_code == 200:
@@ -107,15 +110,15 @@ def update_session(_id, token, amount):
             if data['success']:
                 return None, data
             return {
-                       'code': 2,
-                       'message': 'Response data success is False.'
-                   }, None
+                'code': 2,
+                'message': 'Response data success is False.'
+            }, None
         return {
-                   'code': 2,
-                   'message': 'Response status code is not 200.'
-               }, None
+            'code': 2,
+            'message': 'Response status code is not 200.'
+        }, None
     except Exception as error:
-        logger.error(error,exc_info=True)
+        logger.error(error, exc_info=True)
         return str(error), None
 
 
@@ -133,15 +136,15 @@ def add_tx(tx):
             if data['success']:
                 return None, data
             return {
-                       'code': 2,
-                       'message': 'Response data success is False.'
-                   }, None
+                'code': 2,
+                'message': 'Response data success is False.'
+            }, None
         return {
-                   'code': 2,
-                   'message': 'Response status code is not 200.'
-               }, None
+            'code': 2,
+            'message': 'Response status code is not 200.'
+        }, None
     except Exception as error:
-        logger.error(error,exc_info=True)
+        logger.error(error, exc_info=True)
         return str(error), None
 
 
@@ -159,5 +162,5 @@ def get_free_coins():
             'message': 'Response status code is not 200.'
         }
     except Exception as error:
-        logger.error(error,exc_info=True)
+        logger.error(error, exc_info=True)
         return str(error)

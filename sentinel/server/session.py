@@ -11,26 +11,25 @@ from ..vpn import wireguard
 
 class AddSessionDetails(object):
     def on_post(self, req, res, account_addr, session_id):
-        
+
         account_addr = str(account_addr)
-        
+
         session_id = str(session_id)
-        
+
         token = str(req.body['token'])
         maxUsage = req.body['maxUsage']
         client = db.clients.find_one_and_update({
             'account_addr': account_addr,
             'session_id': session_id,
-            'token':token
-            },
-            {'$set':{
-                         'status': 'ADDED_SESSION_DETAILS',
-                         'max_usage':maxUsage
-                     }
+            'token': token
+        },
+            {'$set': {
+                'status': 'ADDED_SESSION_DETAILS',
+                'max_usage': maxUsage
             }
-        ,upsert=True)
-       
-        if client is not None:                    
+        }, upsert=True)
+
+        if client is not None:
             message = {
                 'success': True,
                 'message': 'Session details already added.'
@@ -63,49 +62,55 @@ class GetVpnCredentials(object):
         session_id = str(session_id)
 
         token = str(req.body['token'])
-        
+
         pub_key = str(req.body['pub_key'])
         loger = logging.getLogger(__name__)
-        
+
         client = db.clients.find_one({
             'account_addr': account_addr,
             'session_id': session_id,
             'token': token,
             'status': 'ADDED_SESSION_DETAILS'
-         })
+        })
         if client is not None:
-            
-            client_vpn_config,pub_key,error = wireguard.add_peer(pub_key)
-            
+
+            client_vpn_config, pub_key, error = wireguard.add_peer(pub_key)
+
             if client_vpn_config is not None:
-                    _ = db.clients.update_one(client,
-                       {'$set': {
-                           'usage': {
-                               'upload': 0,
-                               'download': 0
-                           },
-                           'pub_key': pub_key,
-                           'status': 'SHARED_VPN_CREDS'
-                       }
-                       })
-                    message = {
-                        'success': True,
-                        'message': 'Successfully SHARED_VPN_CREDS..',
-                        'wireguard': client_vpn_config
-                    }    
-            else:
-                    message = {
-                        'success': False,
-                        'message': 'peer is not added'
-                    }
-                    loger.error(error,exc_info=True);
-        else:
-             message = {
+                _ = db.clients.update_one(client,
+                                          {'$set': {
+                                              'usage': {
+                                                  'upload': 0,
+                                                  'download': 0
+                                              },
+                                              'pub_key': pub_key,
+                                              'status': 'SHARED_VPN_CREDS'
+                                          }
+                                          })
+                message = {
+                    'success': True,
+                    'message': 'Successfully SHARED_VPN_CREDS..',
+                    'wireguard': client_vpn_config
+                }
+            elif error == 'Node is busy':
+                message = {
                     'success': False,
-                    'message': 'Invalid Request / Wrong details..'
-                }                        
-       
-        
+                    'message': error
+                }
+                loger.error(error)
+            else:
+
+                message = {
+                    'success': False,
+                    'message': 'peer is not added'
+                }
+                loger.error(error, exc_info=True)
+        else:
+            message = {
+                'success': False,
+                'message': 'Invalid Request / Wrong details..'
+            }
+
         loger.warning(message)
 
         res.status = falcon.HTTP_200
@@ -143,19 +148,19 @@ class AddSessionPaymentSign(object):
                 'account_addr': account_addr,
                 'session_id': session_id,
                 'token': token,
-                'status': {'$in':[
-                                'CONNECTED',
-                                'LIMIT_EXCEEDED']}
+                'status': {'$in': [
+                    'CONNECTED',
+                    'LIMIT_EXCEEDED']}
             })
             if client is not None:
-                _ = db.clients.update(client, 
-                    {
-                        '$push': {
-                            'signatures': signature
-                        }
-                    })
+                _ = db.clients.update(client,
+                                      {
+                                          '$push': {
+                                              'signatures': signature
+                                          }
+                                      })
                 if signature['final']:
-                    end,err = end_session(client['pub_key'])
+                    end, err = end_session(client['pub_key'])
 
                     if end:
                         message = {
@@ -165,9 +170,9 @@ class AddSessionPaymentSign(object):
                     else:
                         message = {
                             'success': False,
-                            'message':'something went wrong session not ended'
-                        }    
-                else:    
+                            'message': 'something went wrong session not ended'
+                        }
+                else:
                     message = {
                         'success': True,
                         'message': 'Successfully added payment sign'
@@ -182,9 +187,9 @@ class AddSessionPaymentSign(object):
                 'success': False,
                 'message': 'missing body parameters'
             }
-        
+
         loger = logging.getLogger(__name__)
         loger.warning(message)
-        
+
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)

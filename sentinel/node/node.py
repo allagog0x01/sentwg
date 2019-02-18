@@ -47,11 +47,13 @@ class Node(object):
             self.net_speed['upload'] = self.speed_test.upload() / 8.0
         elif info_type == 'config':
             if ('account_address' in info) and (info['account_address'] is not None):
-                self.config['account']['address'] = str(info['account_address'])
+                self.config['account']['address'] = str(
+                    info['account_address'])
             if ('account_name' in info) and (info['account_name'] is not None):
                 self.config['account']['name'] = str(info['account_name'])
             if ('account_password' in info) and (info['account_password'] is not None):
-                self.config['account']['password'] = str(info['account_password'])
+                self.config['account']['password'] = str(
+                    info['account_password'])
             if ('api_port' in info) and (info['api_port' is not None]):
                 self.config['api_port'] = int(info['api_port'])
             if ('description' in info) and (info['description' is not None]):

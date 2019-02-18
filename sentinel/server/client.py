@@ -5,6 +5,7 @@ from ..db import db
 from ..helpers import end_session
 import logging
 
+
 class GetSessionUsage(object):
     def on_post(self, req, res, account_addr, session_id):
         """
@@ -31,18 +32,18 @@ class GetSessionUsage(object):
         if client is not None:
             message = {
                 'success': True,
-                'usage': { "up" : client['usage']['upload'],
-                "down":client['usage']['download'] }
+                'usage': {"up": client['usage']['upload'],
+                          "down": client['usage']['download']}
             }
-            logger.info(message)   
+            logger.info(message)
         else:
             message = {
                 'success': False,
                 'message': 'Wrong details.'
             }
-            logger.warning('someOne trying get sessionUsage with wrong details')
-        
-        
+            logger.warning(
+                'someOne trying get sessionUsage with wrong details')
+
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)
 
@@ -62,12 +63,12 @@ class DisconnectClient(object):
         session_id = str(session_id)
         token = str(req.body['token'])
         logger = logging.getLogger(__name__)
-        
+
         client = db.clients.find_one({
             'account_addr': account_addr,
             'session_id': session_id,
             'token': token,
-            'status': {'$in':[
+            'status': {'$in': [
                 'CONNECTED',
                 'LIMIT_EXCEEDED']}
         })
@@ -82,15 +83,15 @@ class DisconnectClient(object):
                 message = {
                     'success': False,
                     'message': 'Not Disconnected..'
-                } 
-                logger.error(message,exc_info=True)   
+                }
+                logger.error(message, exc_info=True)
         else:
             message = {
                 'success': False,
                 'message': 'Wrong details.'
             }
             logger.warning('someOne trying get disconnect with wrong details')
-            
+
         logger.info(message)
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)

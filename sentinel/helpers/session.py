@@ -9,6 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def update_session_status(pub_key, status=''):
     if status == 'CONNECTED':
         _ = db.clients.find_one_and_update({
@@ -22,13 +23,14 @@ def update_session_status(pub_key, status=''):
     else:
         _ = db.clients.find_one_and_update({
             'pub_key': pub_key,
-            'status': {'$in':['CONNECTED','SHARED_VPN_CREDS','LIMIT_EXCEEDED']}
+            'status': {'$in': ['CONNECTED', 'SHARED_VPN_CREDS', 'LIMIT_EXCEEDED']}
         }, {
             '$set': {
                 'status': status
             }
         })
     logging.warning("client session status Updated")
+
 
 def end_session(pub_key, type=None):
     if type == 'NOT_CONNECTED':
@@ -40,11 +42,11 @@ def end_session(pub_key, type=None):
         if discon:
             update_session_status(pub_key, 'DISCONNECTED')
         else:
-            return False,str(err)
+            return False, str(err)
 
     session = db.clients.find_one({
         'pub_key': pub_key,
-        'status': {'$in':['CONNECTED','LIMIT_EXCEEDED']}
+        'status': {'$in': ['CONNECTED', 'LIMIT_EXCEEDED']}
     })
     if session is not None:
         discon, err = wireguard.disconnect_client(pub_key)
@@ -72,7 +74,7 @@ def end_session(pub_key, type=None):
                     if data is not None:
                         error, data = update_session(
                             session['session_id'], session['token'], signature['amount'])
-                
+
             return True, None
         else:
             return False, str(err)

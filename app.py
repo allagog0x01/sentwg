@@ -29,13 +29,14 @@ logging.config.dictConfig(config_dict)
 
 logger = logging.getLogger("__name__")
 
+
 def alive_job():
     while True:
         try:
             update_node('alive')
         except Exception as err:
             logger.exception(err)
-            
+
         time.sleep(30)
 
 
@@ -50,7 +51,7 @@ def sessions_job():
                 extra = 5 if sessions_len > 0 else extra - 1
         except Exception as err:
             logger.exception(err)
-            
+
         time.sleep(5)
 
 
@@ -64,7 +65,7 @@ def api_server_process():
             APIServer(options).run()
         except Exception as err:
             logger.exception(err)
-            
+
         time.sleep(5)
 
 
@@ -149,32 +150,31 @@ if __name__ == '__main__':
     start_new_thread(sessions_job, ())
     start_new_thread(alive_job, ())
 
-   
     while True:
         parsed_config = wireguard.parse_wg_data()
         logger.info(peer_data)
-        
+
         if len(parsed_config) > 0:
             for peer_data in parsed_config:
-                
-                if  peer_data['latest_handshake'] < 180 and peer_data['pub_key']:
+
+                if peer_data['latest_handshake'] < 180 and peer_data['pub_key']:
                     update_session_status(peer_data['pub_key'], 'CONNECTED')
-                    
+
                     update_session_data(peer_data)
 
-                    
                     if client is not None and client['max_usage']['download'] <= client['usage']['download']:
-                        update_session_status(peer_data['pub_key'], 'LIMIT_EXCEEDED')
+                        update_session_status(
+                            peer_data['pub_key'], 'LIMIT_EXCEEDED')
 
                 elif peer_data['latest_handshake'] > 180 or (client is not None and client['max_usage']['download'] <= client['usage']['download']):
                     end, err = end_session(peer_data['pub_key'])
                     if end:
-                        
+
                         logger.warning('session ended')
                     else:
-                        logger.exception(error)                           
-                    
+                        logger.exception(error)
+
                 else:
                     update_session_data(peer_data)
-                
+
         time.sleep(10)

@@ -5,7 +5,6 @@ import subprocess
 from ..db import db
 
 
-
 def update_session_data(session_data):
     pub_key = session_data['pub_key']
     db.clients.find_one_and_update({
@@ -19,7 +18,6 @@ def update_session_data(session_data):
             }
         }
     })
-
 
 
 def get_sessions():

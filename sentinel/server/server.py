@@ -13,9 +13,6 @@ from .session import GetVpnCredentials
 from ..utils import JSONTranslator
 
 
-
-
-
 class Up(object):
     def on_post(self, _, resp):
         resp.status = falcon.HTTP_200
@@ -31,11 +28,16 @@ class APIServer(gunicorn.app.base.BaseApplication):
         self.options = options or {}
         self.server = falcon.API(middleware=[JSONTranslator()])
         self.server.add_route('/', Up())
-        self.server.add_route('/clients/{account_addr}/sessions/{session_id}', AddSessionDetails())
-        self.server.add_route('/clients/{account_addr}/sessions/{session_id}/usage', GetSessionUsage())
-        self.server.add_route('/clients/{account_addr}/sessions/{session_id}/disconnect', DisconnectClient())
-        self.server.add_route('/clients/{account_addr}/sessions/{session_id}/credentials', GetVpnCredentials())
-        self.server.add_route('/clients/{account_addr}/sessions/{session_id}/sign', AddSessionPaymentSign())
+        self.server.add_route(
+            '/clients/{account_addr}/sessions/{session_id}', AddSessionDetails())
+        self.server.add_route(
+            '/clients/{account_addr}/sessions/{session_id}/usage', GetSessionUsage())
+        self.server.add_route(
+            '/clients/{account_addr}/sessions/{session_id}/disconnect', DisconnectClient())
+        self.server.add_route(
+            '/clients/{account_addr}/sessions/{session_id}/credentials', GetVpnCredentials())
+        self.server.add_route(
+            '/clients/{account_addr}/sessions/{session_id}/sign', AddSessionPaymentSign())
         super(APIServer, self).__init__()
 
     def load_config(self):

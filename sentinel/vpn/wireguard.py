@@ -1,6 +1,7 @@
 # coding=utf-8
 import subprocess
 import time
+from os import remove
 from thread import start_new_thread
 
 from configparser import ConfigParser
@@ -10,6 +11,7 @@ from .utils import convert_bandwidth, convert_to_seconds
 
 
 import logging
+
 
 class Wireguard(object):
     def __init__(self, show_output=True):
@@ -60,13 +62,14 @@ class Wireguard(object):
         for i in proc.stdout.read().splitlines():
             a = i.split('\t')
             if pub_key in a and int(a[-1]) == 0:
-                self.logger.info('client recivied credantials but not connected')
+                self.logger.info(
+                    'client recivied credantials but not connected')
                 session_end(pub_key, 'NOT_CONNECTED')
                 break
 
     def add_peer(self, pub_key):
         random_ip = ''
-        file_path = WIREGUARD_DIR + 'client-{}'.format(pub_key[:4])
+
         i = 2
 
         while i < 255:
@@ -75,6 +78,10 @@ class Wireguard(object):
                 self.allocated_ips[pub_key] = random_ip
                 break
             i += 1
+            if(i == 254):
+                return None, None, 'Node is busy'
+
+        file_path = WIREGUARD_DIR + 'client-{}'.format(str(i))
         config = ConfigParser()
         config['Peer'] = {
             'PublicKey': pub_key,
@@ -85,14 +92,14 @@ class Wireguard(object):
                 config.write(f)
         except Exception as err:
             return None, None, err
-        
+
         wg_addconf_proc = subprocess.Popen(self.add_peer_cmd.format(
             file_path), shell=True, stderr=subprocess.PIPE)
         wg_addconf_proc.wait()
         error = wg_addconf_proc.stderr.read()
         if error:
             return None, None, error
-        
+
         start_new_thread(self.check_connection, (pub_key,))
 
         peer_proc = subprocess.Popen(
@@ -109,8 +116,6 @@ class Wireguard(object):
             }, pub_key, None
         else:
             return None, None, "public key not added to the wireguard interface"
-
-       
 
     def parse_wg_data(self):
         session_proc = subprocess.Popen(
@@ -144,9 +149,11 @@ class Wireguard(object):
         disconnect_proc.wait()
         error = disconnect_proc.stderr.read()
         if error:
-            
             return False, error
         if pub_key in self.allocated_ips:
+            ip = self.allocated_ips[pub_key].split('.')
+            path = WIREGUARD_DIR + 'client-{}'.format(str(ip[-1]))
+            remove(path)
             self.allocated_ips.pop(pub_key)
         return True, None
 

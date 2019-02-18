@@ -1,11 +1,13 @@
 import re
 import subprocess
 
+
 def convert_to_seconds(time_in_words):
     secs = 0
 
     def to_secs(s):
-        mat = re.match(r"((?P<hours>\d+)\s?hour)?\s?((?P<minutes>\d+)\s?min)?\s?((?P<seconds>\d+)\s?sec)?", s)
+        mat = re.match(
+            r"((?P<hours>\d+)\s?hour)?\s?((?P<minutes>\d+)\s?min)?\s?((?P<seconds>\d+)\s?sec)?", s)
         secs = 0
         secs += int(mat.group("hours")) * 3600 if mat.group("hours") else 0
         secs += int(mat.group("minutes")) * 60 if mat.group("minutes") else 0
@@ -21,14 +23,14 @@ def convert_bandwidth(bandwidth):
     download, upload = 0.0, 0.0
 
     def to_bytes(num, type):
-            if 'KiB' in type:
-                return num * 1024.0
-            elif 'MiB' in type:
-                return num * 1024.0 * 1024
-            elif 'GiB' in type:
-                return num * 1024.0 * 1024 * 1024
-            else:
-                return num
+        if 'KiB' in type:
+            return num * 1024.0
+        elif 'MiB' in type:
+            return num * 1024.0 * 1024
+        elif 'GiB' in type:
+            return num * 1024.0 * 1024 * 1024
+        else:
+            return num
 
     for s in bandwidth.split(','):
         if 'received' in s:
@@ -41,4 +43,3 @@ def convert_bandwidth(bandwidth):
         'download': download,
         'upload': upload
     }
-
