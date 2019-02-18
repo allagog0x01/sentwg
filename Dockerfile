@@ -23,13 +23,12 @@ ADD log_configuration.json /root/
 ENV SENT_ENV=DEV
 
 RUN echo '@testing http://nl.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
+    apk update && \
     apk add --no-cache ca-certificates python mongodb wireguard-tools@testing && \
     mkdir -p /data/db && \
     wget -c https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py && \
     python /tmp/get-pip.py && \
     pip install --no-cache-dir falcon gunicorn pymongo requests configparser
-RUN apk add --no-cache gcc python-dev musl-dev nano && \
-    pip install --no-cache-dir ipython
 RUN rm -rf /tmp/* /var/tmp/* /var/cache/apk/* /var/cache/distfiles/* /root/.cache .wget-hsts
 
 CMD ["sh", "/root/run.sh"]
