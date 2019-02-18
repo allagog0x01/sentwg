@@ -72,7 +72,7 @@ def end_session(pub_key, type=None):
                     if data is not None:
                         error, data = update_session(
                             session['session_id'], session['token'], signature['amount'])
-                print(error, data)
+                
             return True, None
         else:
             return False, str(err)

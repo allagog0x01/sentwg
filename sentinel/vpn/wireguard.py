@@ -8,8 +8,8 @@ from ..config import WIREGUARD_DIR
 from ..node import node
 from .utils import convert_bandwidth, convert_to_seconds
 
-# have to add wg-quick down
 
+import logging
 
 class Wireguard(object):
     def __init__(self, show_output=True):
@@ -20,6 +20,8 @@ class Wireguard(object):
         self.add_peer_cmd = 'wg addconf wg0 {}'
         self.getsession_cmd = 'wg show wg0'
         self.allocated_ips = {}
+        self.logger = logging.getLogger(__name__)
+
         if show_output is False:
             self.init_cmd += ' >> /dev/null 2>&1'
             self.start_cmd += ' >> /dev/null 2>&1'
@@ -31,7 +33,7 @@ class Wireguard(object):
                 self.stop_cmd, shell=True, stderr=subprocess.PIPE)
             remove_old_wg_proc.wait()
             if not 'ip link delete dev wg0' in remove_old_wg_proc.stderr.read():
-                print("wg interface cannot be stopped")
+                logger.error("Interface can't be disconnected")
                 exit()
         init_proc = subprocess.Popen(self.init_cmd, shell=True)
         init_proc.wait()
@@ -58,7 +60,7 @@ class Wireguard(object):
         for i in proc.stdout.read().splitlines():
             a = i.split('\t')
             if pub_key in a and int(a[-1]) == 0:
-                print("inside_job")
+                self.logger.info('client recivied credantials but not connected')
                 session_end(pub_key, 'NOT_CONNECTED')
                 break
 
@@ -66,9 +68,7 @@ class Wireguard(object):
         random_ip = ''
         file_path = WIREGUARD_DIR + 'client-{}'.format(pub_key[:4])
         i = 2
-        # TODO ADD A ROBUST LOGIC TO ADD RANDOM IP from 10 ip range
-        # TODO INCRESE AND THE NUMBER OF IP's available.
-        # TODO WHAT IF RANDOM_IP IS NOT ASSIGNED.
+
         while i < 255:
             if '10.0.0.{}'.format(str(i)) not in self.allocated_ips.values():
                 random_ip = '10.0.0.{}'.format(str(i))
@@ -85,15 +85,14 @@ class Wireguard(object):
                 config.write(f)
         except Exception as err:
             return None, None, err
-        # TODO: CAN YOU THINK OF EXCEPTIONS
-        # print (self.add_peer_cmd.format(file_path))
+        
         wg_addconf_proc = subprocess.Popen(self.add_peer_cmd.format(
             file_path), shell=True, stderr=subprocess.PIPE)
         wg_addconf_proc.wait()
         error = wg_addconf_proc.stderr.read()
         if error:
             return None, None, error
-        # TODO WHAT IS THE SAFEST WAY TO PROCESS COMMANDS
+        
         start_new_thread(self.check_connection, (pub_key,))
 
         peer_proc = subprocess.Popen(
@@ -111,7 +110,7 @@ class Wireguard(object):
         else:
             return None, None, "public key not added to the wireguard interface"
 
-        # TODO RETURNING STRUCTURE
+       
 
     def parse_wg_data(self):
         session_proc = subprocess.Popen(
@@ -145,12 +144,11 @@ class Wireguard(object):
         disconnect_proc.wait()
         error = disconnect_proc.stderr.read()
         if error:
-            print(error)
+            
             return False, error
         if pub_key in self.allocated_ips:
             self.allocated_ips.pop(pub_key)
         return True, None
-        # parse the disconnect_proc and return error or wrong credentials
 
 
 wireguard = Wireguard()

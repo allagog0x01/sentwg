@@ -26,7 +26,7 @@ import json
 with open("log_configuration.json", 'r') as logging_configuration_file:
     config_dict = json.load(logging_configuration_file)
 logging.config.dictConfig(config_dict)
-# Log that the logger was configured
+
 logger = logging.getLogger("__name__")
 
 def alive_job():
@@ -34,8 +34,8 @@ def alive_job():
         try:
             update_node('alive')
         except Exception as err:
-            logger.Exception(err)
-            #print(str(err))
+            logger.exception(err)
+            
         time.sleep(30)
 
 
@@ -49,8 +49,8 @@ def sessions_job():
                 update_sessions(sessions)
                 extra = 5 if sessions_len > 0 else extra - 1
         except Exception as err:
-            logger.Exception(err)
-            #print(str(err))
+            logger.exception(err)
+            
         time.sleep(5)
 
 
@@ -63,8 +63,8 @@ def api_server_process():
             }
             APIServer(options).run()
         except Exception as err:
-            logger.Exception(err)
-            #print(str(err))
+            logger.exception(err)
+            
         time.sleep(5)
 
 
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     if node.config['account']['address'] is None:
         error, resp = cosmos_call('generate_seed', None)
         if error:
-            logger.Exception(error)
+            logger.exception(error)
             exit(1)
         else:
             error, resp = cosmos_call('get_keys', {
@@ -90,7 +90,7 @@ if __name__ == '__main__':
                 'password': node.config['account']['password']
             })
             if error:
-                logger.Exception(error)
+                logger.exception(error)
                 exit(2)
             else:
                 node.update_info('config', {
@@ -98,7 +98,7 @@ if __name__ == '__main__':
                 })
                 error = get_free_coins()
                 if error is not None:
-                    logger.Exception(error)
+                    logger.exception(error)
                     exit(3)
 
     node.update_info('location')
@@ -123,7 +123,7 @@ if __name__ == '__main__':
             'gas': DEFAULT_GAS
         })
         if error:
-            logger.Exception(error)
+            logger.exception(error)
             exit(4)
         else:
             node.update_info('config', {
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     if node.config['register']['token'] is None:
         error, resp = list_node()
         if error:
-            logger.Exception(error)
+            logger.exception(error)
             exit(5)
         else:
             node.update_info('config', {
@@ -149,14 +149,14 @@ if __name__ == '__main__':
     start_new_thread(sessions_job, ())
     start_new_thread(alive_job, ())
 
-    #Check the below code
+   
     while True:
         parsed_config = wireguard.parse_wg_data()
         logger.info(peer_data)
         
         if len(parsed_config) > 0:
             for peer_data in parsed_config:
-                #if 'latest_handshake' in peer_data.keys():
+                
                 if  peer_data['latest_handshake'] < 180 and peer_data['pub_key']:
                     update_session_status(peer_data['pub_key'], 'CONNECTED')
                     
@@ -169,10 +169,10 @@ if __name__ == '__main__':
                 elif peer_data['latest_handshake'] > 180 or (client is not None and client['max_usage']['download'] <= client['usage']['download']):
                     end, err = end_session(peer_data['pub_key'])
                     if end:
-                        #print('session ended')
+                        
                         logger.warning('session ended')
                     else:
-                        logger.Exception(error)                           
+                        logger.exception(error)                           
                     
                 else:
                     update_session_data(peer_data)

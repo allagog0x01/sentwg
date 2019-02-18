@@ -15,5 +15,4 @@ with open("./log_configuration.json", 'r') as logging_configuration_file:
  
 logging.config.dictConfig(config_dict)
  
-# Log that the logger was configured
 logger = logging.getLogger("__name__")

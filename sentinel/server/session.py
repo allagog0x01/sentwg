@@ -11,11 +11,11 @@ from ..vpn import wireguard
 
 class AddSessionDetails(object):
     def on_post(self, req, res, account_addr, session_id):
-        # TODO did the request really come from master node
+        
         account_addr = str(account_addr)
-        # TODO: CHECK ACCOUNT ADDR AND SESSION ID VALIDATIONS
+        
         session_id = str(session_id)
-        # TODO ADD TO CHECK TOKEN and also validate the incoming token for it's size type and any other
+        
         token = str(req.body['token'])
         maxUsage = req.body['maxUsage']
         client = db.clients.find_one_and_update({
@@ -29,7 +29,7 @@ class AddSessionDetails(object):
                      }
             }
         ,upsert=True)
-        #TODO insert user when client is none
+       
         if client is not None:                    
             message = {
                 'success': True,
@@ -63,11 +63,10 @@ class GetVpnCredentials(object):
         session_id = str(session_id)
 
         token = str(req.body['token'])
-        # TODO ADD STRICT VALIDATION FOR PUBLIC KEYS
+        
         pub_key = str(req.body['pub_key'])
         loger = logging.getLogger(__name__)
-        # TODO: WHAT IS THIS DOING.
-
+        
         client = db.clients.find_one({
             'account_addr': account_addr,
             'session_id': session_id,
@@ -77,7 +76,7 @@ class GetVpnCredentials(object):
         if client is not None:
             
             client_vpn_config,pub_key,error = wireguard.add_peer(pub_key)
-            # TODO CHECK IF PEER IS ADDED PROPERLY.IF PEER ADITION WAS DONE PROPERLY AT THE SAME CHECK IF THE PEER IS ALLOCATED IS SAME_IP
+            
             if client_vpn_config is not None:
                     _ = db.clients.update_one(client,
                        {'$set': {
