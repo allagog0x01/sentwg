@@ -84,7 +84,7 @@ class DisconnectClient(object):
                     'success': False,
                     'message': 'Not Disconnected..'
                 }
-                logger.error(message, exc_info=True)
+                logger.error(message)
         else:
             message = {
                 'success': False,

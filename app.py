@@ -152,7 +152,7 @@ if __name__ == '__main__':
 
     while True:
         parsed_config = wireguard.parse_wg_data()
-        logger.info(peer_data)
+        
 
         if len(parsed_config) > 0:
             for peer_data in parsed_config:

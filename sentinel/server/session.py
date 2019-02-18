@@ -104,7 +104,7 @@ class GetVpnCredentials(object):
                     'success': False,
                     'message': 'peer is not added'
                 }
-                loger.error(error, exc_info=True)
+                loger.error(error)
         else:
             message = {
                 'success': False,
