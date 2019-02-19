@@ -13,9 +13,13 @@ logger = logging.getLogger(__name__)
 
 def limit_exceed_disconnect(pub_key):
     time.sleep(10)
-    end, err = end_session(pub_key)
-    if end:
-        logger.info('session ended after limit exceed')
+    client = db.clients.find_one({'pub_key': pub_key, 'status': 'CONNECTED'})
+    if client is not None:
+        end, err = end_session(pub_key)
+        if end:
+            logger.info('session ended after limit exceed')
+        else:
+            logger.info(err)
 
 
 def update_session_status(pub_key, status=''):

@@ -29,18 +29,22 @@ class GetSessionUsage(object):
             'token': token,
             'status': {'$in': ['CONNECTED', 'LIMIT_EXCEEDED']}
         })
-        if client is not None:
+        if client is not None and client['status'] == 'CONNECTED':
             message = {
                 'success': True,
                 'usage': {"up": client['usage']['upload'],
                           "down": client['usage']['download']},
-                'limit_exceeded': True if client['status'] == 'LIMIT_EXCEEDED' else False
             }
             logger.info(message)
+        elif client is not None and client['status'] == 'LIMIT_EXCEEDED':
+            message = {
+                'success': False,
+                'message': 'limit has exceeded'
+            }
         else:
             message = {
                 'success': False,
-                'message': 'Wrong details.'
+                'message': 'Wrong details'
             }
             logger.warning(
                 'someOne trying get sessionUsage with wrong details')
