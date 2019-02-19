@@ -23,7 +23,7 @@ RUN mkdir /root/.sentinel && mv /root/config /root/.sentinel/config
 ENV SENT_ENV=DEV
 
 RUN echo '@testing http://nl.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
-    apk update \
+    apk update && \
     apk add --no-cache ca-certificates python mongodb wireguard-tools@testing && \
     mkdir -p /data/db && \
     wget -c https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py && \

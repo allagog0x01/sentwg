@@ -156,12 +156,12 @@ if __name__ == '__main__':
 
         if len(parsed_config) > 0:
             for peer_data in parsed_config:
-
+                client = db.findOne({'pub_key':peer_data['pub_key']})
                 if peer_data['latest_handshake'] < 180 and peer_data['pub_key']:
                     update_session_status(peer_data['pub_key'], 'CONNECTED')
 
                     update_session_data(peer_data)
-
+                    
                     if client is not None and client['max_usage']['download'] <= client['usage']['download']:
                         update_session_status(
                             peer_data['pub_key'], 'LIMIT_EXCEEDED')
