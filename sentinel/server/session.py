@@ -40,8 +40,8 @@ class AddSessionDetails(object):
                 'success': True,
                 'message': 'Session details successfully added.'
             }
-        loger = logging.getLogger(__name__)
-        loger.warning(message)
+        logger = logging.getLogger(__name__)
+        logger.warning(message)
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)
 
@@ -64,7 +64,7 @@ class GetVpnCredentials(object):
         token = str(req.body['token'])
 
         pub_key = str(req.body['pub_key'])
-        loger = logging.getLogger(__name__)
+        logger = logging.getLogger(__name__)
 
         client = db.clients.find_one({
             'account_addr': account_addr,
@@ -97,21 +97,21 @@ class GetVpnCredentials(object):
                     'success': False,
                     'message': error
                 }
-                loger.error(error)
+                logger.error(error)
             else:
 
                 message = {
                     'success': False,
                     'message': 'peer is not added'
                 }
-                loger.error(error)
+                logger.error(error)
         else:
             message = {
                 'success': False,
                 'message': 'Invalid Request / Wrong details..'
             }
 
-        loger.warning(message)
+        logger.warning(message)
 
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)
@@ -133,9 +133,12 @@ class AddSessionPaymentSign(object):
         @apiParam {Boolean} signature.final Whether Final signature or not.
         @apiSuccess {Boolean} success Success key.
         """
+
         account_addr = str(account_addr)
         session_id = str(session_id)
         token = str(req.body['token'])
+
+        logger = logging.getLogger(__name__)
 
         if req.body['signature']:
             signature = {
@@ -148,9 +151,7 @@ class AddSessionPaymentSign(object):
                 'account_addr': account_addr,
                 'session_id': session_id,
                 'token': token,
-                'status': {'$in': [
-                    'CONNECTED',
-                    'LIMIT_EXCEEDED']}
+                'status': {'$in': ['CONNECTED', 'LIMIT_EXCEEDED']}
             })
             if client is not None:
                 _ = db.clients.update(client,
@@ -167,11 +168,13 @@ class AddSessionPaymentSign(object):
                             'success': True,
                             'message': 'Successfully done payment session ended'
                         }
+                        logger.info(message)
                     else:
                         message = {
                             'success': False,
                             'message': 'something went wrong session not ended'
                         }
+                        logger.error(err)
                 else:
                     message = {
                         'success': True,
@@ -188,8 +191,7 @@ class AddSessionPaymentSign(object):
                 'message': 'missing body parameters'
             }
 
-        loger = logging.getLogger(__name__)
-        loger.warning(message)
+            logger.error(message)
 
         res.status = falcon.HTTP_200
         res.body = json.dumps(message)

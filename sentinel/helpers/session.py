@@ -6,8 +6,16 @@ from ..node import node
 from ..node import update_session
 from ..vpn import wireguard
 import logging
+import time
 
 logger = logging.getLogger(__name__)
+
+
+def limit_exceed_disconnect(pub_key):
+    time.sleep(10)
+    end, err = end_session(pub_key)
+    if end:
+        logger.info('session ended after limit exceed')
 
 
 def update_session_status(pub_key, status=''):
@@ -41,6 +49,7 @@ def end_session(pub_key, type=None):
         discon, err = wireguard.disconnect_client(pub_key)
         if discon:
             update_session_status(pub_key, 'DISCONNECTED')
+            return True, None
         else:
             return False, str(err)
 
@@ -79,4 +88,4 @@ def end_session(pub_key, type=None):
         else:
             return False, str(err)
     else:
-        return False, 'Details not Found..'
+        return False, 'Client not connected/ Disconnected'

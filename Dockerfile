@@ -18,7 +18,7 @@ COPY --from=deps /root/speedtest.py /usr/lib/python2.7/site-packages/
 
 ADD sentinel /root/sentinel
 ADD app.py run.sh config log_configuration.json /root/
-RUN mkdir /root/.sentinel && mv /root/config /root/.sentinel/config
+RUN mkdir /root/.sentinel
 
 ENV SENT_ENV=DEV
 

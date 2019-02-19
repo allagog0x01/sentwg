@@ -7,7 +7,7 @@ from sentinel.config import DEFAULT_GAS
 from sentinel.config import VERSION
 from sentinel.cosmos import call as cosmos_call
 from sentinel.helpers import end_session
-from sentinel.helpers import update_session_status
+from sentinel.helpers import update_session_status, limit_exceed_disconnect
 from sentinel.node import get_free_coins
 from sentinel.node import list_node
 from sentinel.node import node
@@ -152,20 +152,23 @@ if __name__ == '__main__':
 
     while True:
         parsed_config = wireguard.parse_wg_data()
-        
-
         if len(parsed_config) > 0:
             for peer_data in parsed_config:
-                client = db.find_one({'pub_key':peer_data['pub_key'],'status':'CONNECTED'})
+                client = db.clients.find_one(
+                    {'pub_key': peer_data['pub_key'], 'status': 'CONNECTED'})
+
                 if peer_data['latest_handshake'] < 180 and peer_data['pub_key']:
                     update_session_status(peer_data['pub_key'], 'CONNECTED')
 
                     update_session_data(peer_data)
-                    
+
                     if client is not None and client['max_usage']['download'] <= client['usage']['download']:
                         update_session_status(
                             peer_data['pub_key'], 'LIMIT_EXCEEDED')
-
+                        logger.info('limit exceeded')
+                        # todo start a thread to disconnect and also update the status in db
+                        start_new_thread(limit_exceed_disconnect,
+                                         (peer_data['pub_key'],))
                 elif peer_data['latest_handshake'] > 180 or (client is not None and client['max_usage']['download'] <= client['usage']['download']):
                     end, err = end_session(peer_data['pub_key'])
                     if end:
@@ -177,4 +180,4 @@ if __name__ == '__main__':
                 else:
                     update_session_data(peer_data)
 
-        time.sleep(10)
+        time.sleep(5)

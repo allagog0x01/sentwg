@@ -27,13 +27,14 @@ class GetSessionUsage(object):
             'account_addr': account_addr,
             'session_id': session_id,
             'token': token,
-            'status': 'CONNECTED'
+            'status': {'$in': ['CONNECTED', 'LIMIT_EXCEEDED']}
         })
         if client is not None:
             message = {
                 'success': True,
                 'usage': {"up": client['usage']['upload'],
-                          "down": client['usage']['download']}
+                          "down": client['usage']['download']},
+                'limit_exceeded': True if client['status'] == 'LIMIT_EXCEEDED' else False
             }
             logger.info(message)
         else:
@@ -84,7 +85,7 @@ class DisconnectClient(object):
                     'success': False,
                     'message': 'Not Disconnected..'
                 }
-                logger.error(message)
+                logger.error(err)
         else:
             message = {
                 'success': False,
