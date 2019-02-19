@@ -156,7 +156,7 @@ if __name__ == '__main__':
 
         if len(parsed_config) > 0:
             for peer_data in parsed_config:
-                client = db.findOne({'pub_key':peer_data['pub_key']})
+                client = db.find_one({'pub_key':peer_data['pub_key'],'status':'CONNECTED'})
                 if peer_data['latest_handshake'] < 180 and peer_data['pub_key']:
                     update_session_status(peer_data['pub_key'], 'CONNECTED')
 
