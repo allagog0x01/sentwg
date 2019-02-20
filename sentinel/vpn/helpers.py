@@ -24,9 +24,12 @@ def get_sessions():
     sessions = []
     data = db.clients.find({
         'status': 'CONNECTED'
-    }, {'_id': 0,
-        'pub_key': 0
+    })
+    for client in data:
+        sessions.append({
+                    'sessionId': client['session_id'],
+                    'usage': {
+                        'download': client['usage']['download'],
+                        'upload': client['usage']['upload']
         })
-    for i in data:
-        sessions.append(i)
     return sessions

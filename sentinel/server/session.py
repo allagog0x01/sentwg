@@ -70,7 +70,7 @@ class GetVpnCredentials(object):
             'account_addr': account_addr,
             'session_id': session_id,
             'token': token,
-            'status': 'ADDED_SESSION_DETAILS'
+            'status': {'$in':['ADDED_SESSION_DETAILS','SHARED_VPN_CREDS']}
         })
         if client is not None:
 
@@ -160,7 +160,7 @@ class AddSessionPaymentSign(object):
                                               'signatures': signature
                                           }
                                       })
-                if signature['final']:
+                if signature['final'] and client['status'] != 'DISCONNECTED':
                     end, err = end_session(client['pub_key'])
 
                     if end:

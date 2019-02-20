@@ -20,28 +20,21 @@ def limit_exceed_disconnect(pub_key):
             logger.info('session ended after limit exceed')
         else:
             logger.info(err)
-
-
-def update_session_status(pub_key, status=''):
-    if status == 'CONNECTED':
-        _ = db.clients.find_one_and_update({
-            'pub_key': pub_key,
-            'status': 'SHARED_VPN_CREDS'
-        }, {
-            '$set': {
-                'status': status
-            }
-        })
     else:
-        _ = db.clients.find_one_and_update({
-            'pub_key': pub_key,
-            'status': {'$in': ['CONNECTED', 'SHARED_VPN_CREDS', 'LIMIT_EXCEEDED']}
-        }, {
-            '$set': {
-                'status': status
-            }
-        })
-    logging.warning("client session status Updated")
+        logger.info('client has already disconnected')
+
+
+def update_session_status(pub_key, status):
+
+    _ = db.clients.find_one_and_update({
+        'pub_key': pub_key,
+        'status': {'$in': ['CONNECTED', 'SHARED_VPN_CREDS', 'LIMIT_EXCEEDED']}
+    }, {
+        '$set': {
+            'status': status
+        }
+    })
+    logging.info("client session status Updated to" + str(status))
 
 
 def end_session(pub_key, type=None):

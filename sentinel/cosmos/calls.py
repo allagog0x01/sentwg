@@ -47,7 +47,6 @@ def call(name, data):
                 logger.warning(invalid_msg)
                 return invalid_msg, None
 
-        logger.warning(invalid_msg)
         return invalid_msg, None
 
     except Exception as error:
