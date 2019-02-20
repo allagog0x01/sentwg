@@ -31,5 +31,6 @@ def get_sessions():
                     'usage': {
                         'download': client['usage']['download'],
                         'upload': client['usage']['upload']
+                    }    
         })
     return sessions
