@@ -44,7 +44,7 @@ class GetSessionUsage(object):
         else:
             message = {
                 'success': False,
-                'message': 'Wrong details'
+                'message': 'Wrong details.'
             }
             logger.warning(
                 'someOne trying get sessionUsage with wrong details')
