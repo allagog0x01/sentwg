@@ -4,7 +4,7 @@ RUN apk add git gcc linux-headers make musl-dev wget
 RUN go get -u github.com/golang/dep/cmd/dep && \
     mkdir -p /go/src/github.com/cosmos && \
     cd /go/src/github.com/cosmos && \
-    git clone --depth 1 --branch develop https://github.com/sentinel-official/cosmos-sdk.git && \
+    git clone --depth 1 --branch cosmos-sentinel https://github.com/sentinel-official/cosmos-sdk.git && \
     cd /go/src/github.com/cosmos/cosmos-sdk && \
     dep ensure -v && \
     make install

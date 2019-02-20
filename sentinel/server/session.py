@@ -4,6 +4,7 @@ import json
 import falcon
 import logging
 
+from ..cosmos import call as cosmos_call
 from ..db import db
 from ..helpers import end_session
 from ..vpn import wireguard
@@ -70,7 +71,7 @@ class GetVpnCredentials(object):
             'account_addr': account_addr,
             'session_id': session_id,
             'token': token,
-            'status': {'$in':['ADDED_SESSION_DETAILS','SHARED_VPN_CREDS']}
+            'status': {'$in': ['ADDED_SESSION_DETAILS', 'SHARED_VPN_CREDS']}
         })
         if client is not None:
 
@@ -154,32 +155,48 @@ class AddSessionPaymentSign(object):
                 'status': {'$in': ['CONNECTED', 'LIMIT_EXCEEDED']}
             })
             if client is not None:
-                _ = db.clients.update(client,
-                                      {
-                                          '$push': {
-                                              'signatures': signature
-                                          }
-                                      })
-                if signature['final'] and client['status'] != 'DISCONNECTED':
-                    end, err = end_session(client['pub_key'])
+                res = cosmos_call('validate-sign',
+                                  {
+                                      'session_id': session_id,
+                                      'amount': signature['amount'],
+                                      'counter': signature['index'],
+                                      'sign': signature['hash']
+                                  })
 
-                    if end:
-                        message = {
-                            'success': True,
-                            'message': 'Successfully done payment session ended'
-                        }
-                        logger.info(message)
+                if res:
+
+                    _ = db.clients.update(client,
+                                          {
+                                              '$push': {
+                                                  'signatures': signature
+                                              }
+                                          })
+                    if signature['final'] and client['status'] != 'DISCONNECTED':
+                        end, err = end_session(client['pub_key'])
+
+                        if end:
+                            message = {
+                                'success': True,
+                                'message': 'Successfully done payment session ended'
+                            }
+                            logger.info(message)
+                        else:
+                            message = {
+                                'success': False,
+                                'message': 'something went wrong session not ended'
+                            }
+                            logger.error(err)
                     else:
                         message = {
-                            'success': False,
-                            'message': 'something went wrong session not ended'
+                            'success': True,
+                            'message': 'Successfully added payment sign'
                         }
-                        logger.error(err)
                 else:
                     message = {
                         'success': True,
-                        'message': 'Successfully added payment sign'
+                        'message': 'signature is not valid please send valid signature otherwise you will disconnect'
                     }
+
             else:
                 message = {
                     'success': False,

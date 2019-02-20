@@ -44,4 +44,8 @@ routes = {
         'route': '/accounts',
         'method': 'GET'
     }
+    'validate_sign':{
+        'route': '/validate-sign',
+        'method': 'POST'
+    }
 }
