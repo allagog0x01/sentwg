@@ -27,10 +27,10 @@ def get_sessions():
     })
     for client in data:
         sessions.append({
-                    'sessionId': client['session_id'],
-                    'usage': {
+            'sessionId': client['session_id'],
+            'usage': {
                         'download': client['usage']['download'],
                         'upload': client['usage']['upload']
-                    }    
+                        }
         })
     return sessions
