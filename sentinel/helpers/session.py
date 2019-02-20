@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def limit_exceed_disconnect(pub_key):
     time.sleep(10)
-    client = db.clients.find_one({'pub_key': pub_key, 'status': 'CONNECTED'})
+    client = db.clients.find_one({'pub_key': pub_key, 'status':{'$in':['CONNECTED','LIMIT_EXCEEDED']}})
     if client is not None:
         end, err = end_session(pub_key)
         if end:
