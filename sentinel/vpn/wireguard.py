@@ -11,7 +11,7 @@ from .utils import convert_bandwidth, convert_to_seconds
 
 
 import logging
-
+logger = logging.getLogger(__name__)
 
 class Wireguard(object):
     def __init__(self, show_output=True):
@@ -22,7 +22,6 @@ class Wireguard(object):
         self.add_peer_cmd = 'wg addconf wg0 {}'
         self.getsession_cmd = 'wg show wg0'
         self.allocated_ips = {}
-        self.logger = logging.getLogger(__name__)
 
         if show_output is False:
             self.init_cmd += ' >> /dev/null 2>&1'
@@ -62,7 +61,7 @@ class Wireguard(object):
         for i in proc.stdout.read().splitlines():
             a = i.split('\t')
             if pub_key in a and int(a[-1]) == 0:
-                self.logger.info(
+                logger.info(
                     'client recivied credantials but not connected')
                 session_end(pub_key, 'NOT_CONNECTED')
                 break
@@ -155,6 +154,7 @@ class Wireguard(object):
             path = WIREGUARD_DIR + 'client-{}'.format(str(ip[-1]))
             remove(path)
             self.allocated_ips.pop(pub_key)
+            logger.info('client disconnected and ip removed from allocated ips')
         return True, None
 
 

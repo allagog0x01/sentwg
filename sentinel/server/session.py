@@ -193,14 +193,14 @@ class AddSessionPaymentSign(object):
                 'status': {'$in': ['CONNECTED', 'LIMIT_EXCEEDED']}
             })
             if client is not None:
-                res = cosmos_call('validate-sign',
+                is_valid = cosmos_call('validate_sign',
                                   {
                                       'session_id': session_id,
                                       'amount': signature['amount'],
                                       'counter': signature['index'],
                                       'sign': signature['hash']
                                   })
-                if res:
+                if is_valid['success']:
                     _ = db.clients.update(client,
                                           {
                                               '$push': {
