@@ -28,7 +28,7 @@ RUN echo '@testing http://nl.alpinelinux.org/alpine/edge/testing' >> /etc/apk/re
     mkdir -p /data/db && \
     wget -c https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py && \
     python /tmp/get-pip.py && \
-    pip install --no-cache-dir falcon gunicorn pymongo requests configparser
+    pip install --no-cache-dir falcon gunicorn pymongo requests configparser jsonschema
 RUN apk add --no-cache gcc python-dev musl-dev nano && \
     pip install --no-cache-dir ipython
 RUN rm -rf /tmp/* /var/tmp/* /var/cache/apk/* /var/cache/distfiles/* /root/.cache .wget-hsts

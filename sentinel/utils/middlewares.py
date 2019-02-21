@@ -4,14 +4,13 @@ import falcon
 
 import logging
 
-
+logger = logging.getLogger(__name__)
 class JSONTranslator(object):
     def process_request(self, req, _):
         body = req.stream.read()
         try:
             req.body = json.loads(body.decode('utf-8'))
         except ValueError as err:
-            logger = logging.getLogger(__name__)
 
             _ = {
                 'message': 'Malformed JSON',
