@@ -11,6 +11,15 @@ from ..vpn import wireguard
 
 class AddSessionDetails(object):
     def on_post(self, req, res, account_addr, session_id):
+        """
+        @api {POST} /clients/{account_addr}/sessions/{session_id}/ Add session details
+        @apiName AddSessionDetails
+        @apiGroup Session
+        @apiParam {String} account_addr Cosmos account address of the client.
+        @apiParam {String} session_id Unique session ID.
+        @apiParam {String} token Token for communication with node.
+        @apiSuccess {Boolean} success Success key.
+        """
 
         account_addr = str(account_addr)
 
