@@ -25,9 +25,8 @@ class Node(object):
         self.cpcmd = "cp /root/config /root/.sentinel/"
 
         if(not path.exists('/root/.sentinel/config')):
-            self.cmd_wait = subprocess.Popen(
-                self.cpcmd, shell=True, stderr=subprocess.PIPE)
-            self.cmd_wait.wait()
+            subprocess.Popen(self.cpcmd, shell=True, stderr=subprocess.PIPE).wait()
+            
 
         with open(CONFIG_DATA_PATH, 'r') as f:
             self.config = json.load(f)
