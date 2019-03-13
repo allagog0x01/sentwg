@@ -22,10 +22,10 @@ class Node(object):
         }
         self.config = {}
 
-        self.cpcmd = "cp /root/config /root/.sentinel/"
-
-        if(not path.exists('/root/.sentinel/config')):
-            subprocess.Popen(self.cpcmd, shell=True, stderr=subprocess.PIPE).wait()
+        self.cpcmd = 'cp /root/config /root/.sentinel/'
+        
+        if(not path.exists(CONFIG_DATA_PATH)):
+            subprocess.Popen(self.cpcmd, shell = True).wait()
             
 
         with open(CONFIG_DATA_PATH, 'r') as f:
