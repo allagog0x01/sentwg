@@ -7,6 +7,9 @@ from speedtest import Speedtest
 
 from ..config import CONFIG_DATA_PATH
 
+from os import path
+import subprocess
+
 
 class Node(object):
     def __init__(self):
@@ -18,11 +21,19 @@ class Node(object):
             'upload': None
         }
         self.config = {}
+
+        self.cpcmd = "cp /root/config /root/.sentinel/"
+
+        if(not path.exists('/root/.sentinel/config')):
+            subprocess.Popen(
+                self.cpcmd, shell=True, stderr=subprocess.PIPE)
+
         with open(CONFIG_DATA_PATH, 'r') as f:
             self.config = json.load(f)
 
     def save_config(self):
         with open(CONFIG_DATA_PATH, 'w') as f:
+            """  """
             config = copy.deepcopy(self.config)
             del (config['account']['name'])
             del (config['account']['password'])
