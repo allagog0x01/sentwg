@@ -3,6 +3,7 @@
 from .node import node
 from ..config import MASTER_NODE_URL
 from ..config import VERSION
+from ..config import FREE_TOKENS_URL
 from ..utils import fetch
 import logging
 logger = logging.getLogger(__name__)
@@ -152,7 +153,7 @@ def get_free_coins():
     body = {
         "address": node.config['account']['address']
     }
-    url = 'http://209.182.217.171:3000/get-tokens'
+    url = FREE_TOKENS_URL+'/get-tokens'
     try:
         response = fetch().post(url, json=body)
         if response and response.status_code == 200:

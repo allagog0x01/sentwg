@@ -7,3 +7,4 @@ COSMOS_URL = 'http://localhost:1317'
 DEFAULT_GAS = 21000
 VERSION = '0.1.2-alpha'
 WIREGUARD_DIR='/etc/wireguard/'
+FREE_TOKENS_URL = 'http://tm-api.sentinelgroup.io:3000'

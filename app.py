@@ -107,6 +107,7 @@ if __name__ == '__main__':
 
     if node.config['register']['hash'] is None:
         error, resp = cosmos_call('register_vpn_node', {
+            'moniker' : str(node.config['moniker']),
             'ip': str(node.ip),
             'upload_speed': int(node.net_speed['upload']),
             'download_speed': int(node.net_speed['download']),
@@ -117,7 +118,7 @@ if __name__ == '__main__':
             'location_longitude': int(node.location['longitude'] * 10000),
             'location_city': str(node.location['city']),
             'location_country': str(node.location['country']),
-            'node_type': 'wireguard',
+            'node_type': 'WireGuard',
             'version': VERSION,
             'name': str(node.config['account']['name']),
             'password': str(node.config['account']['password']),

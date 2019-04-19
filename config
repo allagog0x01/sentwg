@@ -3,7 +3,8 @@
         "address": null
     }, 
     "api_port": 3000, 
-    "description": "", 
+    "description": "",
+    "moniker":"sent_wg",
     "wireguard": {
         "enc_method": "ChaCha20",
         "port": 5253
