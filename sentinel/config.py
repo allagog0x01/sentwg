@@ -1,6 +1,6 @@
 # coding=utf-8
 
-MASTER_NODE_URL = 'http://35.154.179.57:8000'
+MASTER_NODE_URL = 'http://tm-master.sentinelgroup.io:8000'
 LIMIT_1GB = 1.0 * 1024 * 1024 * 1024
 CONFIG_DATA_PATH = '/root/.sentinel/config'
 COSMOS_URL = 'http://localhost:1317'
